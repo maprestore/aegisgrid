@@ -1,111 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AEGISGRID // SECURE COMMAND</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root { 
-            --bg-tactical: #020305; --radar-green: #00ff66; --threat-amber: #ffaa00; --threat-red: #ff0000;
-            --border-dim: rgba(0, 255, 102, 0.25); --text-digital: #a3b8b0; 
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', monospace; }
-        body { background: var(--bg-tactical); color: #fff; display: flex; flex-direction: column; min-height: 100vh; transition: background 0.5s; }
-        
-        header { padding: 15px 20px; border-bottom: 2px solid var(--radar-green); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); transition: border 0.3s; }
-        .brand h1 { color: var(--radar-green); font-size: 1.1rem; letter-spacing: 2px; }
-        
-        .nav-bar { display: flex; gap: 15px; padding: 10px 20px; background: rgba(0,255,102,0.05); border-bottom: 1px solid var(--border-dim); }
-        .nav-btn { cursor: pointer; color: var(--text-digital); font-size: 0.7rem; text-transform: uppercase; border: none; background: none; }
-        .nav-btn:hover { color: var(--radar-green); }
-
-        main { flex: 1; padding: 20px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
-        .console { border: 1px solid var(--border-dim); padding: 15px; background: rgba(7, 12, 10, 0.9); }
-        #map { width: 100%; height: 500px; border: 1px solid var(--radar-green); position: relative; }
-        
-        .pulse-ring { width: 20px; height: 20px; border-radius: 50%; background: var(--radar-green); animation: radarPulse 2s infinite; margin: 10px auto; }
-        @keyframes radarPulse { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(0, 255, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 102, 0); } }
-        
-        .widget { margin-top: 15px; padding: 15px; border: 1px solid var(--border-dim); background: #0a0e0c; }
-        .data-point { font-size: 0.75rem; margin-bottom: 8px; display: flex; justify-content: space-between; }
-        .hash-display { font-size: 0.55rem; color: var(--radar-green); background: black; padding: 5px; margin-top: 5px; word-break: break-all; border: 1px dashed var(--radar-green); text-align: center; }
-        
-        .btn-main { width: 100%; padding: 12px; margin-top: 10px; background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green); cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        .btn-main:hover { background: var(--radar-green); color: #000; }
-        
-        footer { padding: 15px; text-align: center; border-top: 1px solid var(--border-dim); font-size: 0.6rem; color: var(--text-digital); }
-        @media (max-width: 768px) { main { grid-template-columns: 1fr; } }
-    </style>
-</head>
-<body>
-
-<header id="mainHeader">
-    <div class="brand"><h1>AEGISGRID // SECURE</h1></div>
-    <div style="font-size: 0.7rem;">AI STATUS: <span id="aiStatus" style="color:var(--radar-green)">ONLINE</span></div>
-</header>
-
-<div class="nav-bar">
-    <button class="nav-btn" onclick="showSection('dashboard')">FIELD OPS</button>
-    <button class="nav-btn" onclick="requestAdminAccess()">COMMAND TOWER</button>
-    <button class="nav-btn" onclick="showSection('about')">ARCHITECT</button>
-</div>
-
-<main id="main-content">
-    <section id="dashboard">
-        <div class="console"><div id="map"></div></div>
-    </section>
-    
-    <section id="admin" style="display:none;" class="console">
-        <h2 style="color:var(--radar-green); font-size: 1rem;">ADMIN COMMAND // MASTER OVERRIDE</h2>
-        <div class="widget">
-            <h3 style="font-size: 0.6rem; color:var(--radar-green);">SYSTEM TELEMETRY DIAGNOSTICS</h3>
-            <button class="btn-main" style="border-color:#00ff66" onclick="setSystemStatus('GREEN')">SET STATUS: GREEN</button>
-            <button class="btn-main" style="border-color:#ff0000" onclick="setSystemStatus('RED')">SET STATUS: RED</button>
-        </div>
-        <div class="widget">
-            <p style="font-size: 0.7rem; color: #fff;">Forensic System Logs:</p>
-            <div id="logArea" style="font-size: 0.5rem; color: var(--radar-green); margin-top: 10px; height: 120px; overflow-y: scroll;">[SYSTEM_LOG_INITIALIZED]</div>
-            <button class="btn-main" onclick="exportLogs()">EXPORT FORENSIC DATA</button>
-            <button class="btn-main" style="border-color:#ff0000; color:#ff0000;" onclick="emergencyWipe()">EMERGENCY WIPE</button>
-        </div>
-    </section>
-
-    <section id="about" style="display:none;" class="console">
-        <h2 style="color:var(--radar-green); font-size: 1rem;">SYSTEM ARCHITECT: TIMMY DON</h2>
-        <p style="font-size: 0.7rem; color: var(--text-digital); margin-top: 10px;">
-            AegisGrid is a cognitive defensive framework engineered by Timmy Don. 
-            This architecture represents the standard for secure, auditable, and intelligent logistical management.
-        </p>
-    </section>
-
-    <aside id="sidebar">
-        <div class="console">
-            <h2 style="font-size: 0.8rem; color:var(--radar-green);">COGNITIVE FEED</h2>
-            <div id="statusPulse" class="pulse-ring"></div>
-            <div class="widget">
-                <div class="data-point"><span>HEARTBEAT:</span><span id="hbStatus">●</span></div>
-                <div class="data-point"><span>NODES:</span><span id="nodeCount">0</span></div>
-                <div id="integrityHash" class="hash-display">SYNC_READY</div>
-            </div>
-            <button class="btn-main" onclick="transmitData()">TRANSMIT TELEMETRY</button>
-            <button class="btn-main" style="border-color:var(--threat-amber)" onclick="initVoice()">VOICE COMMAND</button>
-        </div>
-    </aside>
-</main>
-
-<footer>&copy; 2026 AEGISGRID DEFENSIVE SYSTEMS. ARCHITECT: TIMMY DON.</footer>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     // Initialize Supabase
     const supabase = supabase.createClient('https://fmgjwxsdxydcwxddvpchf.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtZ2p3eHNkeWdjd3hkZHZwY2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNTk3NjksImV4cCI6MjA5NjgzNTc2OX0.fgcojr3zEv4riwXmnKPDFSLElU7TaGJLAIr4uljRn_8');
     
     const ADMIN_KEY = "TIMMY2026";
-    let map = L.map('map', {tap: false}).setView([9.0820, 8.6753], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    let map;
     let nodeCount = 0;
+
+    // Use DOMContentLoaded to ensure the map div exists before initializing Leaflet
+    window.addEventListener('DOMContentLoaded', () => {
+        map = L.map('map', {tap: false}).setView([9.0820, 8.6753], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Crucial for grid layouts: forces the map to recalculate its display area
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 500);
+    });
     
     // Mission Timer
     let startTime = new Date();
@@ -145,6 +58,11 @@
         document.getElementById('admin').style.display = (id === 'admin') ? 'block' : 'none';
         document.getElementById('about').style.display = (id === 'about') ? 'block' : 'none';
         document.getElementById('sidebar').style.display = (id === 'admin') ? 'none' : 'block';
+        
+        // If switching back to dashboard, ensure map isn't broken
+        if (id === 'dashboard' && map) {
+            setTimeout(() => { map.invalidateSize(); }, 100);
+        }
     }
 
     function exportLogs() {
@@ -167,7 +85,10 @@
         }
     }
 
-    setInterval(() => { document.getElementById('hbStatus').style.opacity = (document.getElementById('hbStatus').style.opacity === "0") ? "1" : "0"; }, 1000);
+    setInterval(() => { 
+        const hb = document.getElementById('hbStatus');
+        if(hb) hb.style.opacity = (hb.style.opacity === "0") ? "1" : "0"; 
+    }, 1000);
 
     function speakGlobal(msg) {
         if ('speechSynthesis' in window) {
@@ -189,6 +110,11 @@
     }
 
     async function transmitData() {
+        if (!navigator.geolocation) {
+            alert("Geolocation not supported by this browser.");
+            return;
+        }
+
         navigator.geolocation.getCurrentPosition(async (pos) => {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
@@ -210,10 +136,11 @@
                 document.getElementById('logArea').innerHTML += `<br>> NODE_${nodeCount}: ${hash} (CLOUD_SYNCED)`;
                 speakGlobal("Telemetry synchronized to cloud.");
             } else {
-                alert("Sync Error: Check your database configuration.");
+                console.error("Supabase Error:", error);
+                alert("Sync Error: Check your database RLS policies.");
             }
+        }, (err) => {
+            alert("Location access denied or unavailable.");
         });
     }
 </script>
-</body>
-</html>
