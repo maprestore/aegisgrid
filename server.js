@@ -1,11 +1,19 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
+// FIX: Robust import syntax for newer Socket.io versions
 const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+
+// FIX: Explicitly pass the server instance and allow cross-origin traffic for deployment environments
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -50,5 +58,8 @@ io.on('connection', (socket) => {
     });
 });
 
+// FIX: Render explicitly requires binding to 0.0.0.0 alongside the dynamic environment port
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Aegis Strategic Node online on port ${PORT}`));
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Aegis Strategic Core listening on port ${PORT}`);
+});
