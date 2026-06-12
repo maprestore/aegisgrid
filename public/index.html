@@ -9,8 +9,8 @@
     <script src="/socket.io/socket.io.js"></script>
     
     <style>
-        :root { --neon-green: #00ff00; --dark-core: rgba(10, 15, 10, 0.96); --alert-red: #ff3333; --cyber-blue: #00ffff; }
-        body, html { margin:0; padding:0; width:100%; height:100%; background:#000; font-family:'Courier New', monospace; overflow:hidden; color:#fff; }
+        :root { --neon-green: #00ff00; --dark-core: rgba(10, 15, 10, 0.96); --alert-red: #ff3333; --cyber-blue: #00ffff; --infrared: #ff0055; }
+        body, html { margin:0; padding:0; width:100%; height:100%; background:#000; font-family:'Courier New', monospace; overflow:hidden; color:#fff; transition: background 0.5s; }
         #mainContainer { display:flex; width:100%; height:100%; position:relative; }
         #map { flex:1; height:100%; background:#020202; z-index:1; }
         #sidebarPanel { width:340px; height:100%; background:var(--dark-core); border-left:2px solid var(--neon-green); z-index:10; display:flex; flex-direction:column; box-sizing:border-box; }
@@ -20,13 +20,15 @@
         .btn { background:transparent; border:1px solid var(--neon-green); color:var(--neon-green); padding:6px 10px; font-family:monospace; font-size:11px; font-weight:bold; cursor:pointer; width:100%; box-sizing:border-box; margin-bottom:4px; text-transform:uppercase; }
         .btn:hover { background:rgba(0,255,0,0.15); }
         .btn-blue { border-color:var(--cyber-blue); color:var(--cyber-blue); }
-        .btn-blue:hover { background:rgba(0,255,255,0.15); }
         .btn-danger { border-color:var(--alert-red); color:var(--alert-red); }
-        #radioChatBox, #stegoDisplayBox { height:100px; background:rgba(0,0,0,0.4); border:1px solid rgba(0,255,0,0.15); overflow-y:auto; padding:4px; font-size:10px; color:#00ffaa; margin-bottom:4px; }
-        #videoContainer { width:100%; height:110px; background:#000; position:relative; border:1px solid rgba(0,255,0,0.2); overflow:hidden; }
-        #webcamStream { width:100%; height:100%; object-fit:cover; filter:matrix(0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,1) sepia(1) hue-rotate(90deg) saturate(2.5); }
+        #radioChatBox, #stegoDisplayBox { height:80px; background:rgba(0,0,0,0.4); border:1px solid rgba(0,255,0,0.15); overflow-y:auto; padding:4px; font-size:10px; color:#00ffaa; margin-bottom:4px; }
+        #videoContainer { width:100%; height:100px; background:#000; position:relative; border:1px solid rgba(0,255,0,0.2); overflow:hidden; }
+        #webcamStream { width:100%; height:100%; object-fit:cover; filter: sepia(1) hue-rotate(90deg) saturate(2.5); }
         .hud-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:10px; color:#999; }
-        @media (max-width:768px) { #mainContainer { flex-direction:column-reverse; } #sidebarPanel { width:100%; height:50%; border-left:none; border-top:2px solid var(--neon-green); } #map { height:50%; } }
+        
+        /* Push To Talk Layout Graphic Style */
+        .ptt-active { background: var(--alert-red) !important; color: #000 !important; border-color: #fff !important; }
+        @media (max-width:768px) { #mainContainer { flex-direction:column-reverse; } #sidebarPanel { width:100%; height:52%; border-left:none; border-top:2px solid var(--neon-green); } #map { height:48%; } }
     </style>
 </head>
 <body>
@@ -36,40 +38,41 @@
 
     <div id="sidebarPanel">
         <div class="panel-section">
-            <h2>AEGIS SYSTEMS INTERFACE</h2>
+            <h2>AEGIS COMMAND METRIC ARCHITECTURE</h2>
             <div class="hud-grid">
-                <div>NET SPEED: <span id="valNet" style="color:#fff;">--</span> Mbps</div>
                 <div>BATTERY: <span id="valBat" style="color:#fff;">--</span></div>
                 <div>LOCAL MESH: <span id="valMesh" style="color:var(--cyber-blue);">0 CACHED</span></div>
+                <div>LIGHT ENV: <span id="valLight" style="color:var(--cyber-blue);">SCANNING</span></div>
                 <div>NET STATUS: <span id="valState" style="color:var(--neon-green);">CONNECTED</span></div>
             </div>
         </div>
 
         <div class="panel-section" style="background:rgba(0,15,0,0.2);">
-            <h3>OPERATIONAL CORE SWITCHES</h3>
+            <h3>TACTICAL HARDWARE ENGINES</h3>
             <label style="display:flex; align-items:center; justify-content:space-between; font-size:11px; margin-bottom:4px; cursor:pointer;">
                 <span>SILENT STEALTH ENGINE</span>
                 <input type="checkbox" id="stealthToggle" onchange="toggleStealthMode()" style="accent-color:var(--neon-green);">
             </label>
-            <label style="display:flex; align-items:center; justify-content:space-between; font-size:11px; cursor:pointer;">
+            <label style="display:flex; align-items:center; justify-content:space-between; font-size:11px; margin-bottom:4px; cursor:pointer;">
                 <span>HIGH-FREQ SONAR PING</span>
                 <input type="checkbox" id="sonarToggle" onchange="toggleSonarBeacon()" style="accent-color:var(--cyber-blue);">
             </label>
+            <button id="pttButton" class="btn btn-blue" style="margin:4px 0 0 0; font-size:10px;" onmousedown="startVoiceTransmission()" onmouseup="stopVoiceTransmission()" ontouchstart="startVoiceTransmission()" ontouchend="stopVoiceTransmission()">HOLD TO TALK [VOICE INTERCOM]</button>
             <div id="convergenceAlerts" style="font-size:9px; color:var(--alert-red); margin-top:4px; max-height:24px; overflow-y:auto;"></div>
         </div>
 
         <div class="panel-section">
-            <h3>STEGANOGRAPHY ENCRYPTED DECK</h3>
+            <h3>STEGANOGRAPHY SECRET SYSTEM</h3>
             <div id="stegoDisplayBox"></div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
                 <input type="file" id="stegoFile" accept="image/*" style="display:none;" onchange="processAndSendStegoImage()">
-                <button class="btn btn-blue" onclick="document.getElementById('stegoFile').click()" style="margin:0; font-size:10px;">INJECT IMAGE</button>
+                <button class="btn btn-blue" onclick="document.getElementById('stegoFile').click()" style="margin:0; font-size:10px;">INJECT PACKET</button>
                 <button class="btn btn-blue" onclick="triggerStegoExtraction()" style="margin:0; font-size:10px;">DECODE TARGET</button>
             </div>
         </div>
 
-        <div class="panel-section" style="display:flex; flex-direction:column; max-height:140px;">
-            <h3>ENCRYPTED INTERCOM CHANNEL</h3>
+        <div class="panel-section" style="display:flex; flex-direction:column;">
+            <h3>SECURE COMMUNICATOR LOG</h3>
             <div id="radioChatBox"></div>
             <div style="display:flex;">
                 <input type="text" id="radioInput" placeholder="SECURE PACKET..." style="flex:1; background:#000; border:1px solid var(--neon-green); color:#00ff00; font-family:monospace; padding:4px; font-size:10px;">
@@ -77,15 +80,15 @@
             </div>
         </div>
 
-        <div class="panel-section" style="padding:4px;">
+        <div class="panel-section" style="padding:2px;">
             <div id="videoContainer"><video id="webcamStream" autoplay playsinline muted></video></div>
         </div>
 
         <div class="panel-section" style="display:flex; flex-direction:column; flex:1;">
-            <h3>FORENSIC ARCHITECTURE LOGS</h3>
+            <h3>TERMINAL MATRIX RECORDS</h3>
             <div id="terminalLogs"></div>
             <button class="btn" onclick="triggerManualTelemetry()">SYNC TELEMETRY</button>
-            <button class="btn btn-danger" onclick="accessCommandTower()" style="margin:0;">OVERRIDE PORTAL</button>
+            <button class="btn btn-danger" onclick="accessCommandTowerWithBiometrics()" style="margin:0;">BIOMETRIC TOWER OVERRIDE</button>
         </div>
     </div>
 </div>
@@ -100,21 +103,145 @@
     let isAdminAuthenticated = false;
     let isStealthActive = false;
     let audioContext, sonarOscillator;
+    
+    // Voice Intercom Variables
+    let mediaRecorder;
+    let voiceStream;
 
-    // 1. OFF-GRID LOCAL STORAGE MESH ENGINE (Uses IndexedDB cache layout matrices)
+    // 1. BIOMETRIC ACCESS PLATFORM ENGINE (WebAuthn Local Fingerprint/FaceID Verification Routing)
+    async function accessCommandTowerWithBiometrics() {
+        if (!window.PublicKeyCredential) {
+            logTerminalMessage("[LOCK]: Biometric drivers missing. Reverting to pass-phrase framework.");
+            fallbackManualVerification();
+            return;
+        }
+
+        logTerminalMessage("[LOCK]: Initializing physical biometric identity handshakes...");
+        
+        // Custom hardware credential assertion challenge objects
+        const hardwareChallenge = {
+            challenge: new Uint8Array([1, 2, 3, 4, 11, 12, 13, 14]),
+            rp: { name: "AegisGrid Security Matrix Core" },
+            user: { id: new Uint8Array([42]), name: "architect@aegisgrid.core", displayName: "Master Architect Admin" },
+            pubKeyCredParams: [{type: "public-key", alg: -7}]
+        };
+
+        try {
+            // Trigger native mobile FaceID/Fingerprint capture tray
+            const biometricHandshake = await navigator.credentials.create({ publicKey: hardwareChallenge });
+            if (biometricHandshake) {
+                isAdminAuthenticated = true;
+                logTerminalMessage("BIOMETRIC ACCESS CONFIRMED: Admin credentials approved via local touch hardware.");
+                alert("COMMAND OVERRIDE ARMED: Webauthn token active. Map context drops enabled.");
+            }
+        } catch (err) {
+            logTerminalMessage("[REFUSAL]: Fingerprint/FaceID scan mismatch or bypassed.");
+            fallbackManualVerification();
+        }
+    }
+
+    function fallbackManualVerification() {
+        const keyAttempt = prompt("ENTER OVERRIDE AUTHORIZATION PHRASE:");
+        fetch('/api/verify-tower', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ pass: keyAttempt })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                isAdminAuthenticated = true;
+                logTerminalMessage("PORTAL VERIFIED: Core controls unlocked. Audit modules armed.");
+            } else { alert("ACCESS FORBIDDEN"); }
+        });
+    }
+
+    // 2. AMBIENT CAMOUFLAGE UI ENGINE (Analyzes camera matrix calculations to auto-switch theme designs)
+    function auditAmbientLightMatrix(videoFrameElement) {
+        if (isStealthActive) return;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 40; canvas.height = 30;
+        
+        try {
+            ctx.drawImage(videoFrameElement, 0, 0, canvas.width, canvas.height);
+            const framePixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            let totalBrightnessValue = 0;
+            
+            for (let i = 0; i < framePixels.length; i += 4) {
+                totalBrightnessValue += (framePixels[i] + framePixels[i+1] + framePixels[i+2]) / 3;
+            }
+            
+            const averageLuxMetric = totalBrightnessValue / (framePixels.length / 4);
+            document.getElementById('valLight').innerText = averageLuxMetric < 45 ? "NIGHT_OPS" : "DAYTIME_GLARE";
+            
+            // Auto-Cloak UI theme change triggers if workspace lux level falls below darkness scale
+            if (averageLuxMetric < 45) {
+                document.documentElement.style.setProperty('--neon-green', 'var(--infrared)');
+                document.getElementById('sidebarPanel').style.borderColor = 'var(--infrared)';
+            } else {
+                document.documentElement.style.setProperty('--neon-green', '#00ff00');
+                document.getElementById('sidebarPanel').style.borderColor = '#00ff00';
+            }
+        } catch (e) {}
+    }
+
+    // 3. PHYSICAL MORSE CODE VIBRATION ENGINE (Pushes tactical haptic pulses into phone shell)
+    function triggerHapticMorseAlert(patternCode) {
+        if (!navigator.vibrate) return;
+        if (patternCode === "CONVERGENCE") {
+            navigator.vibrate([200, 100, 200, 100, 500]); // Short-short-long morse warning pulse
+        } else if (patternCode === "INCOMING_CHAT") {
+            navigator.vibrate([100, 500]); // Fast notice pulse
+        }
+    }
+
+    // 4. REAL-TIME P2P VOICE INTERCOM ENGINE (Pipes microphone binary arrays directly over channels)
+    function startVoiceTransmission() {
+        document.getElementById('pttButton').classList.add('ptt-active');
+        navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            voiceStream = stream;
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0) {
+                    const audioBufferReader = new FileReader();
+                    audioBufferReader.onloadend = () => {
+                        socket.emit('voice-audio-chunk', audioBufferReader.result);
+                    };
+                    audioBufferReader.readAsDataURL(event.data);
+                }
+            };
+            mediaRecorder.start(250); // Slice voice input data stream every 250ms packets
+            logTerminalMessage("[PTT]: Voice transmission intercom live. Broadcasting...");
+        }).catch(() => logTerminalMessage("Audio microphone interface drive connection error."));
+    }
+
+    function stopVoiceTransmission() {
+        document.getElementById('pttButton').classList.remove('ptt-active');
+        if (mediaRecorder && mediaRecorder.state !== "inactive") { mediaRecorder.stop(); }
+        if (voiceStream) { voiceStream.getTracks().forEach(track => track.stop()); }
+        logTerminalMessage("[PTT]: Intercom radio line closed.");
+    }
+
+    socket.on('incoming-voice-audio', function(payload) {
+        if (isStealthActive) return;
+        const playbackAudioElement = new Audio(payload.audio);
+        playbackAudioElement.play().catch(() => {});
+        logTerminalMessage(`[RADIO]: Audio intercept stream received from Node ${payload.sender}`);
+    });
+
+    // --- LOCAL DB CACHE HOOK INTERFACES ---
     let db;
     const dbRequest = indexedDB.open("AegisMeshCache", 1);
-    dbRequest.onupgradeneeded = e => {
-        db = e.target.result;
-        db.createObjectStore("offlineLogs", { keyPath: "id", autoIncrement: true });
-    };
     dbRequest.onsuccess = e => { db = e.target.result; updateMeshDiagnosticDisplay(); };
+    dbRequest.onupgradeneeded = e => { e.target.result.createObjectStore("offlineLogs", { keyPath: "id", autoIncrement: true }); };
 
     function cacheLogOffline(textPayload) {
         if(!db) return;
         const tx = db.transaction("offlineLogs", "readwrite");
         tx.objectStore("offlineLogs").add({ text: textPayload, time: Date.now() });
-        tx.oncomplete = () => { updateMeshDiagnosticDisplay(); logTerminalMessage("[MESH]: Off-grid packet cached to internal storage."); };
+        tx.oncomplete = () => { updateMeshDiagnosticDisplay(); logTerminalMessage("[MESH]: Connection lost. Telemetry packet cached to browser."); };
     }
 
     function updateMeshDiagnosticDisplay() {
@@ -124,7 +251,6 @@
         countRequest.onsuccess = () => { document.getElementById('valMesh').innerText = `${countRequest.result} CACHED`; };
     }
 
-    // Check internet signal availability transitions
     window.addEventListener('online', () => {
         document.getElementById('valState').innerText = "CONNECTED";
         document.getElementById('valState').style.color = "var(--neon-green)";
@@ -138,17 +264,15 @@
                 const clearTx = db.transaction("offlineLogs", "readwrite");
                 clearTx.objectStore("offlineLogs").clear();
                 clearTx.oncomplete = () => updateMeshDiagnosticDisplay();
-                logTerminalMessage("[MESH]: Connection restored. Dispatched bulk cache strings back to active server.");
             }
         };
     });
     window.addEventListener('offline', () => {
         document.getElementById('valState').innerText = "OFF-GRID";
         document.getElementById('valState').style.color = "var(--alert-red)";
-        logTerminalMessage("[WARNING]: Internet drop verified. Engaging Off-Grid Storage backup layers.");
     });
 
-    // 2. PIXEL-LEVEL STEGANOGRAPHY ENGINE (Encodes hidden bits in canvas components)
+    // --- STEGANOGRAPHY HANDLERS ---
     function processAndSendStegoImage() {
         const fileSelector = document.getElementById('stegoFile').files[0];
         if(!fileSelector) return;
@@ -164,24 +288,20 @@
                 canvas.width = img.width; canvas.height = img.height;
                 ctx.drawImage(img, 0, 0);
 
-                // Inject hidden data into image color bytes (Least Significant Bit injection)
                 let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 let binaryMsg = "";
                 for (let i = 0; i < secretMsg.length; i++) {
                     let bin = secretMsg.charCodeAt(i).toString(2);
                     binaryMsg += "0".repeat(8 - bin.length) + bin;
                 }
-                binaryMsg += "1111111111111110"; // Terminating structural verification boundary bit string
+                binaryMsg += "1111111111111110";
 
                 for(let i = 0; i < binaryMsg.length; i++) {
                     imgData.data[i] = (imgData.data[i] & 0xFE) | parseInt(binaryMsg[i]);
                 }
                 ctx.putImageData(imgData, 0, 0);
-                
-                // Package tracking matrix upload data
-                const encodedBase64Str = canvas.toDataURL();
-                socket.emit('transmit-stego-package', { imageData: encodedBase64Str });
-                logTerminalMessage("Steganographic canvas payload successfully dispatched onto terminal loops.");
+                socket.emit('transmit-stego-package', { imageData: canvas.toDataURL() });
+                logTerminalMessage("Steganography photo package successfully transmitted.");
             };
             img.src = event.target.result;
         };
@@ -189,15 +309,15 @@
     }
 
     socket.on('receive-stego-package', function(bundle) {
+        triggerHapticMorseAlert("INCOMING_CHAT");
         const displayContainer = document.getElementById('stegoDisplayBox');
-        displayContainer.innerHTML = `<div><b>[IMAGE ENTRANCE from ${bundle.sender}]</b></div>
-        <img src="${bundle.imageData}" id="targetStegoImg" style="width:70px; height:50px; object-fit:cover; border:1px solid #fff; cursor:pointer;" onclick="triggerStegoExtraction()">`;
+        displayContainer.innerHTML = `<div><b>[STEGO LINK from ${bundle.sender}]</b></div>
+        <img src="${bundle.imageData}" id="targetStegoImg" style="width:65px; height:45px; object-fit:cover; border:1px solid #fff; cursor:pointer;" onclick="triggerStegoExtraction()">`;
     });
 
     function triggerStegoExtraction() {
         const targetImgElement = document.getElementById('targetStegoImg');
-        if(!targetImgElement) { alert("No active steganography file selected to extract."); return; }
-        
+        if(!targetImgElement) return;
         const canvas = document.getElementById('stegoCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = targetImgElement.naturalWidth || targetImgElement.width;
@@ -206,20 +326,18 @@
         
         const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         let binaryString = "";
-        for(let i = 0; i < imgData.data.length; i++) {
-            binaryString += (imgData.data[i] & 1).toString();
-        }
+        for(let i = 0; i < imgData.data.length; i++) { binaryString += (imgData.data[i] & 1).toString(); }
         
         let extractedCharacters = "";
         for(let i = 0; i < binaryString.length; i += 8) {
             let byteStr = binaryString.slice(i, i + 8);
-            if(byteStr === "11111111") break; // Halt at boundary limit bit structure
+            if(byteStr === "11111111") break;
             extractedCharacters += String.fromCharCode(parseInt(byteStr, 2));
         }
-        alert(`[EXTRACTED INVISIBLE DATA]:\n${extractedCharacters}`);
+        alert(`[EXTRACTED DATA PAYLOAD]:\n${extractedCharacters}`);
     }
 
-    // 3. HIGH-FREQUENCY SONAR PULSE DETECTOR (Web Audio physical ultrasonic hardware pinging)
+    // --- SONAR SIGNAL BEACON ---
     function toggleSonarBeacon() {
         const activeState = document.getElementById('sonarToggle').checked;
         if (!window.AudioContext && !window.webkitAudioContext) return;
@@ -228,51 +346,45 @@
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
             sonarOscillator = audioContext.createOscillator();
             sonarOscillator.type = 'sine';
-            sonarOscillator.frequency.setValueAtTime(18500, audioContext.currentTime); // 18.5kHz Ultrasonic frequency limit threshold
+            sonarOscillator.frequency.setValueAtTime(18500, audioContext.currentTime);
             sonarOscillator.connect(audioContext.destination);
             sonarOscillator.start();
-            logTerminalMessage("[SONAR]: Emitting high-frequency acoustic tracking sonar wave (18.5kHz)...");
+            logTerminalMessage("[SONAR]: High-frequency ultrasonic audio pulse active (18.5kHz).");
         } else {
             if(sonarOscillator) { sonarOscillator.stop(); sonarOscillator.disconnect(); }
             if(audioContext) { audioContext.close(); }
-            logTerminalMessage("[SONAR]: Ultrasonic frequency beacon neutralized.");
+            logTerminalMessage("[SONAR]: Sonar frequency trace closed.");
         }
     }
 
-    // 4. REMOTE HARDWARE AUDIT COMPLIANCE MODULE (Forced environment inspection takeover framework)
+    // --- REMOTE HOST MACHINE COMPLIANCE MONITOR AUDITING ---
     socket.on('execute-hardware-audit', function() {
-        const auditLogPayload = {
+        socket.emit('submit-audit-payload', {
             viewport: `${window.innerWidth}x${window.innerHeight}`,
             platform: navigator.platform,
             userAgent: navigator.userAgent,
-            cores: navigator.hardwareConcurrency || "UNAVAILABLE",
+            cores: navigator.hardwareConcurrency || "N/A",
             languages: navigator.languages,
-            ram: navigator.deviceMemory || "HIDDEN ENVIRONMENT",
             timestamp: Date.now()
-        };
-        // Silently beam compliance data matrix block back down socket line to admin dashboard
-        socket.emit('submit-audit-payload', auditLogPayload);
+        });
     });
 
-    // --- BASE INTEGRATION MATRIX FUNCTIONS ---
+    // --- GLOBAL LAYOUT FOUNDATIONS ---
     function initMapCanvas() {
         map = L.map('map', { zoomControl: false }).setView([6.5244, 3.3792], 6);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
-        logTerminalMessage("Satellite map system fully initialised.");
+        logTerminalMessage("Satellite telemetry matrix fully operational.");
     }
     initMapCanvas();
 
     function triggerManualTelemetry() {
-        if (!navigator.onLine) {
-            cacheLogOffline("Manual Telemetry Attempted While Offline");
-            return;
-        }
+        if (!navigator.onLine) { cacheLogOffline("Manual Position Broadcast Delayed"); return; }
         navigator.geolocation.getCurrentPosition((pos) => {
             const { latitude, longitude } = pos.coords;
             socket.emit('telemetry-pulse', { lat: latitude, lon: longitude });
-            logTerminalMessage(`Telemetry online: [LAT: ${latitude.toFixed(4)} || LON: ${longitude.toFixed(4)}]`);
+            logTerminalMessage(`Position locked: [LAT: ${latitude.toFixed(4)} || LON: ${longitude.toFixed(4)}]`);
             if (userSectorCircle) map.removeLayer(userSectorCircle);
-            userSectorCircle = L.circle([latitude, longitude], { color: '#00ff00', fillColor: '#00ff00', fillOpacity: 0.1, radius: 3000 }).addTo(map);
+            userSectorCircle = L.circle([latitude, longitude], { color: 'var(--neon-green)', fillColor: 'var(--neon-green)', fillOpacity: 0.1, radius: 3000 }).addTo(map);
             map.panTo([latitude, longitude]);
         });
     }
@@ -282,31 +394,26 @@
             const node = nodes[id];
             if (!node.lat || !node.lon) return;
 
-            const iconColor = node.auditData ? 'var(--cyber-blue)' : '#00ff00';
-            const nodeIcon = L.divIcon({
-                html: `<div style="background:${iconColor}; width:10px; height:10px; border-radius:50%; box-shadow:0 0 10px ${iconColor};"></div>`
-            });
+            const iconColor = node.auditData ? 'var(--cyber-blue)' : 'var(--neon-green)';
+            const nodeIcon = L.divIcon({ html: `<div style="background:${iconColor}; width:10px; height:10px; border-radius:50%; box-shadow:0 0 10px ${iconColor};"></div>` });
 
             let popupContent = `<b>NODE HASH: ${id.slice(0,5)}</b>`;
             if (node.auditData) {
-                popupContent += `<br><span style="font-size:10px; color:var(--cyber-blue)">OS: ${node.auditData.platform}<br>RAM: ${node.auditData.ram}GB<br>CORES: ${node.auditData.cores}</span>`;
+                popupContent += `<br><span style="font-size:10px; color:var(--cyber-blue)">OS: ${node.auditData.platform}<br>CORES: ${node.auditData.cores}</span>`;
             } else if (isAdminAuthenticated) {
-                popupContent += `<br><button onclick="socket.emit('trigger-remote-audit','${id}')" style="font-size:9px; background:#000; color:#fff; border:1px solid #fff;">AUDIT HARDWARE</button>`;
+                popupContent += `<br><button onclick="socket.emit('trigger-remote-audit','${id}')" style="font-size:9px; background:#000; color:#fff; border:1px solid #fff;">AUDIT CORE</button>`;
             }
 
-            if (markers[id]) {
-                markers[id].setLatLng([node.lat, node.lon]).setPopupContent(popupContent);
-            } else {
-                markers[id] = L.marker([node.lat, node.lon], { icon: nodeIcon }).addTo(map).bindPopup(popupContent);
-            }
+            if (markers[id]) { markers[id].setLatLng([node.lat, node.lon]).setPopupContent(popupContent); }
+            else { markers[id] = L.marker([node.lat, node.lon], { icon: nodeIcon }).addTo(map).bindPopup(popupContent); }
         });
     });
 
     socket.on('system-alert', function(alert) {
         if (isStealthActive) return;
+        triggerHapticMorseAlert("CONVERGENCE");
         document.getElementById('convergenceAlerts').innerHTML = `<div>⚠️ ${alert.message}</div>`;
-        logTerminalMessage(`ALERT: ${alert.message}`);
-        speakVoiceNotification("Alert. Convergence anomaly discovered on telemetry circuits.");
+        logTerminalMessage(`CRITICAL: ${alert.message}`);
     });
 
     socket.on('node-timeout', function(deadId) {
@@ -320,15 +427,12 @@
     function sendRadioPacket() {
         const field = document.getElementById('radioInput');
         if (!field.value.trim()) return;
-        if (!navigator.onLine) {
-            cacheLogOffline(`RADIO MESSAGE: ${field.value}`);
-            field.value = "";
-            return;
-        }
+        if (!navigator.onLine) { cacheLogOffline(`COMMS MESSAGE: ${field.value}`); field.value = ""; return; }
         socket.emit('radio-message', field.value);
         field.value = "";
     }
     socket.on('radio-broadcast', function(data) {
+        triggerHapticMorseAlert("INCOMING_CHAT");
         const logBox = document.getElementById('radioChatBox');
         logBox.innerHTML += `<div><span style="color:var(--neon-green)">[${data.sender}]</span>: ${data.text}</div>`;
         logBox.scrollTop = logBox.scrollHeight;
@@ -340,46 +444,26 @@
         if (isStealthActive) {
             const vid = document.getElementById('webcamStream');
             if (vid.srcObject) { vid.srcObject.getTracks().forEach(track => track.stop()); vid.srcObject = null; }
-            layoutBody.style.filter = "contrast(1.5) brightness(0.3) grayscale(1)";
+            layoutBody.style.filter = "contrast(1.5) brightness(0.2) grayscale(1)";
             document.getElementById('sidebarPanel').style.background = "#000000";
-            if (window.speechSynthesis) window.speechSynthesis.cancel();
-            logTerminalMessage("STEALTH ENGAGED: Audio/Video elements muted.");
+            logTerminalMessage("STEALTH ENGINE ENGAGED.");
         } else {
             layoutBody.style.filter = "none";
             document.getElementById('sidebarPanel').style.background = "var(--dark-core)";
             initHardwareMediaStream();
-            logTerminalMessage("STEALTH DISABLED.");
+            logTerminalMessage("STEALTH SYSTEM DISABLED.");
         }
-    }
-
-    function accessCommandTower() {
-        const keyAttempt = prompt("ENTER OVERRIDE AUTHORIZATION PHRASE:");
-        fetch('/api/verify-tower', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ pass: keyAttempt })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                isAdminAuthenticated = true;
-                logTerminalMessage("PORTAL VERIFIED: Core controls unlocked. Audit modules armed.");
-            } else {
-                alert("ACCESS FORBIDDEN");
-            }
-        });
-    }
-
-    function speakVoiceNotification(msg) {
-        if (isStealthActive || !window.speechSynthesis) return;
-        window.speechSynthesis.speak(new SpeechSynthesisUtterance(msg));
     }
 
     function initHardwareMediaStream() {
         if (isStealthActive) return;
-        navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 110 } })
-        .then(str => { document.getElementById('webcamStream').srcObject = str; })
-        .catch(() => logTerminalMessage("Media pipe offline."));
+        navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 100 } })
+        .then(str => { 
+            const videoEl = document.getElementById('webcamStream');
+            videoEl.srcObject = str;
+            // Engage ambient sensor analysis loop intervals
+            setInterval(() => auditAmbientLightMatrix(videoEl), 4000);
+        }).catch(() => logTerminalMessage("Media feed tracking bypass engaged."));
     }
     initHardwareMediaStream();
 
