@@ -24,7 +24,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     const deltaPhi = (lat2 - lat1) * Math.PI / 180;
     const deltaLambda = (lon2 - lon1) * Math.PI / 180;
     const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
-              Math.cos(phi1) * Math.cos(phi2) *
+              Math.cos(phi1) * Math.cos(phi2) +
               Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
     return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
@@ -39,7 +39,7 @@ app.post('/api/verify-tower', (req, res) => {
 
 io.on('connection', (socket) => {
     console.log(`Node Online: ${socket.id}`);
-    activeNodes[socket.id] = { id: socket.id, lastSeen: Date.now(), lat: null, lon: null, auditData: null };
+    activeNodes[socket.id] = { id: socket.id, lastSeen: Date.now(), lat: null, lon: null, auditData: null, stitchRole: null };
 
     socket.emit('sync-waypoints', activeWaypoints);
 
@@ -61,9 +61,28 @@ io.on('connection', (socket) => {
         }
     });
 
-    // ACOUSTIC SPIKE ROUTER: Relays environmental sound danger warnings to the entire command structure
+    // DISPLAY MATRIX STITCHING ROUTER: Emits viewport segmentation rules across the matrix array
+    socket.on('assign-stitch-matrix', (matrixConfiguration) => {
+        // matrixConfiguration: { targetNodeId, role: 'LEFT' | 'RIGHT' | 'STANDARD' }
+        if (activeNodes[matrixConfiguration.targetNodeId]) {
+            activeNodes[matrixConfiguration.targetNodeId].stitchRole = matrixConfiguration.role;
+            io.to(matrixConfiguration.targetNodeId).emit('execute-display-stitch', matrixConfiguration.role);
+            io.emit('node-update', activeNodes);
+        }
+    });
+
+    // GLITCH STEGANOGRAPHY BROKER: Relays sudden visual signal triggers instantly
+    socket.on('trigger-subliminal-glitch', (signalTypeCode) => {
+        io.emit('incoming-glitch-signal', { origin: socket.id.slice(0,4), type: signalTypeCode });
+    });
+
+    // ACOUSTIC RANGING RINGER: Directs peer-to-peer sound pulse loops
+    socket.on('request-acoustic-ping-pulse', () => {
+        socket.broadcast.emit('trigger-acoustic-chirp-response');
+    });
+
     socket.on('acoustic-spike-breach', (dbLevel) => {
-        io.emit('system-alert', { type: 'AUDIO_SPIKE', message: `Acoustic Spike Anomaly: Node ${socket.id.slice(0,4)} environment registered severe audio surge (${Math.round(dbLevel)} dB)!` });
+        io.emit('system-alert', { type: 'AUDIO_SPIKE', message: `Acoustic Spike Anomaly: Node ${socket.id.slice(0,4)} registered severe audio surge (${Math.round(dbLevel)} dB)!` });
     });
 
     socket.on('voice-audio-chunk', (audioData) => {
@@ -120,4 +139,4 @@ setInterval(() => {
 }, 30000);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`AegisGrid Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`AegisGrid Grandmaster Engine online on port ${PORT}`));
