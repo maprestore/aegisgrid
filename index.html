@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGISGRID // Global & Federal Unified Matrix</title>
+    
+    <!-- Explicit Leaflet & FontAwesome Integration -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-tactical: #020305;
+            --bg-deck: rgba(7, 12, 10, 0.9);
+            --radar-green: #00ff66;
+            --threat-amber: #ffaa00;
+            --threat-critical: #ff2222;
+            --border-dim: rgba(0, 255, 102, 0.25);
+            --text-digital: #a3b8b0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', monospace; }
+        body, html { background-color: var(--bg-tactical); color: #ffffff; width: 100%; min-height: 100vh; overflow-x: hidden; }
+        
+        body::after {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(10, 16, 14, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+            z-index: 9999; background-size: 100% 4px; pointer-events: none;
+        }
+
+        header {
+            display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;
+            border-bottom: 1px solid var(--border-dim); background: rgba(2, 3, 5, 0.95);
+        }
+
+        .matrix-title { font-weight: 900; font-size: 1.1rem; letter-spacing: 2px; color: var(--radar-green); text-shadow: 0 0 8px rgba(0, 255, 102, 0.4); }
+        
+        .view-switcher { display: flex; gap: 10px; }
+        .mode-btn {
+            background: transparent; border: 1px solid var(--border-dim); color: var(--text-digital);
+            padding: 5px 15px; cursor: pointer; font-size: 0.75rem; font-weight: bold;
+        }
+        .mode-btn.active { border-color: var(--radar-green); color: var(--radar-green); background: rgba(0, 255, 102, 0.1); }
+
+        main { display: grid; grid-template-columns: 1fr; gap: 15px; padding: 15px; max-width: 500px; margin: 0 auto; }
+        .console-card { background: var(--bg-deck); border: 1px solid var(--border-dim); padding: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); }
+        .card-header-tag { font-size: 0.7rem; color: var(--radar-green); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px dashed var(--border-dim); padding-bottom: 5px; display: flex; justify-content: space-between; }
+        
+        /* FIXED SIZING MATRIX BLOCK REMOVES THE INVISIBLE GRAY BOX ERROR */
+        #map { 
+            display: block !important;
+            width: 100% !important; 
+            height: 280px !important; 
+            background: #040806 !important; 
+            border: 1px solid rgba(0, 255, 102, 0.3);
+            margin-bottom: 5px;
+        }
+        .leaflet-tile { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
+        
+        .stream-logger-view { font-size: 0.65rem; color: var(--text-digital); background: rgba(0,0,0,0.7); padding: 10px; border-left: 2px solid var(--radar-green); height: 90px; overflow-y: scroll; }
+        .stream-logger-view span { color: var(--radar-green); }
+        .routing-metrics { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 6px; }
+        .metric-val { color: var(--radar-green); font-weight: bold; }
+
+        .form-block { display: flex; flex-direction: column; gap: 12px; }
+        .input-node-wrapper { background: rgba(0,0,0,0.5); border: 1px solid rgba(0, 255, 102, 0.25); padding: 10px; }
+        .input-node-wrapper label { display: block; font-size: 0.65rem; color: var(--text-digital); margin-bottom: 5px; }
+        .input-node-wrapper select { width: 100%; background: transparent; border: none; outline: none; color: #fff; font-size: 0.85rem; }
+        .input-node-wrapper select option { background: #020305; color: #fff; }
+
+        .btn-trigger { width: 100%; background: linear-gradient(90deg, rgba(0, 255, 102, 0.15), transparent); border: 1px solid var(--radar-green); color: #fff; padding: 12px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; }
+        .btn-trigger:hover { background: var(--radar-green); color: #000; box-shadow: 0 0 15px rgba(0, 255, 102, 0.4); }
+        
+        .admin-only { display: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="matrix-title">AEGISGRID // SYSTEM</div>
+        <div class="view-switcher">
+            <button id="btnOperatorMode" class="mode-btn active" onclick="toggleInterfaceMode('operator')">OPERATOR HUD</button>
+            <button id="btnAdminMode" class="mode-btn" onclick="toggleInterfaceMode('admin')">ADMIN CONTROL</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="console-card">
+            <div class="card-header-tag">
+                <span id="txtMapTitle">Operator Tactical Tracking Grid</span>
+                <span style="color: var(--threat-amber);" id="systemStatusBadge">SYS_ONLINE</span>
+            </div>
+            <div id="map"></div>
+        </div>
+
+        <div class="console-card">
+            <div class="card-header-tag">Telemetry Coordinate Stream</div>
+            <div class="routing-metrics"><span>Latitude:</span><span id="lblLat" class="metric-val">0.000000</span></div>
+            <div class="routing-metrics"><span>Longitude:</span><span id="lblLng" class="metric-val">0.000000</span></div>
+            <div class="routing-metrics"><span>Mitigation Pathing:</span><span id="txtMitigationStatus" class="metric-val">Standby Mode</span></div>
+        </div>
+
+        <div class="console-card">
+            <div class="card-header-tag">Live System Transaction Logs</div>
+            <div class="stream-logger-view" id="telemetryTerminalLog">
+                [SYSTEM] Initialization complete. Secure Supabase Cloud Link Running.<br>
+                [READY] Select operational tracking sector node theater below.
+            </div>
+        </div>
+
+        <!-- OPERATOR INTERFACE PERIMETERS BLOCK -->
+        <div class="console-card id-operator-panel">
+            <div class="card-header-tag">Transmit Asset Telemetry</div>
+            <div class="form-block">
+                <div class="input-node-wrapper">
+                    <label>Operational Theater (All States + Global Corridor)</label>
+                    <select id="sectorZone">
+                        <option value="Global Transit Corridor Alpha">-- GLOBAL TRANSIT CORRIDOR --</option>
+                        <option value="Abia Command Sector">Abia State</option>
+                        <option value="Adamawa Command Sector">Adamawa State</option>
+                        <option value="Akwa Ibom Command Sector">Akwa Ibom State</option>
+                        <option value="Anambra Command Sector">Anambra State</option>
+                        <option value="Bauchi Command Sector">Bauchi State</option>
+                        <option value="Bayelsa Command Sector">Bayelsa State</option>
+                        <option value="Benue Command Sector">Benue State</option>
+                        <option value="Borno Command Sector">Borno State</option>
+                        <option value="Cross River Command Sector">Cross River State</option>
+                        <option value="Delta Command Sector">Delta State</option>
+                        <option value="Ebonyi Command Sector">Ebonyi State</option>
+                        <option value="Edo Command Sector">Edo State</option>
+                        <option value="Ekiti Command Sector">Ekiti State</option>
+                        <option value="Enugu Command Sector">Enugu State</option>
+                        <option value="FCT Abuja Command Sector">FCT Abuja</option>
+                        <option value="Gombe Command Sector">Gombe State</option>
+                        <option value="Imo Command Sector">Imo State</option>
+                        <option value="Jigawa Command Sector">Jigawa State</option>
+                        <option value="Kaduna Command Sector">Kaduna State</option>
+                        <option value="Kano Command Sector">Kano State</option>
+                        <option value="Katsina Command Sector">Katsina State</option>
+                        <option value="Kebbi Command Sector">Kebbi State</option>
+                        <option value="Kogi Command Sector">Kogi State</option>
+                        <option value="Kwara Command Sector">Kwara State</option>
+                        <option value="Lagos Command Sector" selected>Lagos State</option>
+                        <option value="Nasarawa Command Sector">Nasarawa State</option>
+                        <option value="Niger Command Sector">Niger State</option>
+                        <option value="Ogun Command Sector">Ogun State</option>
+                        <option value="Ondo Command Sector">Ondo State</option>
+                        <option value="Osun Command Sector">Osun State</option>
+                        <option value="Oyo Command Sector">Oyo State</option>
+                        <option value="Plateau Command Sector">Plateau State</option>
+                        <option value="Rivers Command Sector">Rivers State</option>
+                        <option value="Sokoto Command Sector">Sokoto State</option>
+                        <option value="Taraba Command Sector">Taraba State</option>
+                        <option value="Yobe Command Sector">Yobe State</option>
+                        <option value="Zamfara Command Sector">Zamfara State</option>
+                    </select>
+                </div>
+
+                <div class="input-node-wrapper">
+                    <label>Threat Level Severity Classification</label>
+                    <select id="threatClassification">
+                        <option value="Condition Green">Condition Green: Secure Channel</option>
+                        <option value="Condition Red">Condition Red: Active Interdiction</option>
+                    </select>
+                </div>
+
+                <button class="btn-trigger" onclick="transmitOperatorData()">Transmit Coordinates Upstream</button>
+            </div>
+        </div>
+
+        <!-- UNIFIED ADMIN CONTROL SECTION OVERLAY -->
+        <div class="console-card admin-only id-admin-panel">
+            <div class="card-header-tag">Fleet Administration Command</div>
+            <p style="font-size:0.75rem; margin-bottom:12px; color:var(--text-digital)">Master overview querying the full real-time backend pool ledger coordinates.</p>
+            <button class="btn-trigger" style="border-color:var(--threat-amber);" onclick="pullFullFleetMap()">Poll All Fleet Asset Markers</button>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+        let map; let primaryMarker; let activePathOverlay; let adminMarkersGroup = [];
+
+        function initTacticalMap() {
+            map = L.map('map').setView([9.0820, 8.6753], 6);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+            
+            // THE INVALIdatESIZE TIMER: Flushes map buffer memory arrays instantly to fix the rendering glitch 
+            setTimeout(() => { map.invalidateSize(); }, 400);
+        }
+
+        function toggleInterfaceMode(selectedMode) {
+            const operatorPanel = document.querySelector('.id-operator-panel');
+            const adminPanel = document.querySelector('.id-admin-panel');
+            const mapTitle = document.getElementById('txtMapTitle');
+            
+            document.getElementById('btnOperatorMode').classList.remove('active');
+            document.getElementById('btnAdminMode').classList.remove('active');
+
+            if(activePathOverlay) map.removeLayer(activePathOverlay);
+            adminMarkersGroup.forEach(m => map.removeLayer(m));
+            adminMarkersGroup = [];
+
+            if (selectedMode === 'operator') {
+                document.getElementById('btnOperatorMode').classList.add('active');
+                operatorPanel.style.display = 'block';
+                adminPanel.style.display = 'none';
+                mapTitle.innerText = "Operator Tactical Tracking Grid";
+                if(primaryMarker) map.setView(primaryMarker.getLatLng(), 14);
+            } else {
+                document.getElementById('btnAdminMode').classList.add('active');
+                operatorPanel.style.display = 'none';
+                adminPanel.style.display = 'block';
+                mapTitle.innerText = "Global Fleet Command Tower";
+                map.setView([9.0820, 8.6753], 6);
+            }
+            setTimeout(() => { map.invalidateSize(); }, 200);
+        }
+
+        function transmitOperatorData() {
+            const sector = document.getElementById('sectorZone').value;
+            const threat = document.getElementById('threatClassification').value;
+            const logger = document.getElementById('telemetryTerminalLog');
+
+            logger.innerHTML += `<br><span>[GPS]</span> Polling system coordinates...`;
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const currentCoords = [lat, lng];
+
+                    document.getElementById('lblLat').innerText = lat.toFixed(6);
+                    document.getElementById('lblLng').innerText = lng.toFixed(6);
+
+                    if (!primaryMarker) {
+                        primaryMarker = L.marker(currentCoords).addTo(map).bindPopup("<b>YOUR RECON NODE</b>").openPopup();
+                    } else {
+                        primaryMarker.setLatLng(currentCoords);
+                    }
+                    map.setView(currentCoords, 14);
+
+                    fetch('/api/threats/inject', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sector: sector, severity: threat })
+                    }).then(res => res.json()).then(resData => {
+                        logger.innerHTML += `<br><span>[DB]</span> Transmission successful. Supabase sync ID: \${resData.injectedNode.id}`;
+                    });
+                }, (err) => { alert("Check location access permission box in address URL bar."); }, { enableHighAccuracy: true });
+            }
+        }
+
+        function pullFullFleetMap() {
+            const logger = document.getElementById('telemetryTerminalLog');
+            logger.innerHTML += `<br><span>[DB]</span> Querying historic ledger tables...`;
+            fetch('/api/fleet/all')
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(item => {
+                        let offsetLat = (Math.random() - 0.5) * 3;
+                        let offsetLng = (Math.random() - 0.5) * 3;
+                        let marker = L.marker([9.0820 + offsetLat, 8.6753 + offsetLng]).addTo(map)
+                            .bindPopup(`<b>FLEET MARKER</b><br>Sector: \${item.sector}`);
+                        adminMarkersGroup.push(marker);
+                    });
+                });
+        }
+
+        window.onload = initTacticalMap;
+    </script>
+</body>
+</html>
