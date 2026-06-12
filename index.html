@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOGISWIFT // Quantum Neural Grid</title>
+    <title>AEGISGRID // Live Geolocation Matrix</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --bg-deep: #030407;
-            --neon-cyan: #00f3ff;
-            --neon-magenta: #ff0055;
-            --matrix-glow: rgba(0, 243, 255, 0.25);
-            --panel-bg: rgba(6, 9, 15, 0.75);
+            --bg-tactical: #020305;
+            --bg-deck: rgba(7, 12, 10, 0.9);
+            --radar-green: #00ff66;
+            --threat-amber: #ffaa00;
+            --threat-critical: #ff2222;
+            --border-dim: rgba(0, 255, 102, 0.2);
+            --text-digital: #a3b8b0;
         }
 
         * {
@@ -19,397 +23,214 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Courier New', Courier, monospace;
-            user-select: none;
         }
 
         body, html {
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-deep);
+            background-color: var(--bg-tactical);
             color: #ffffff;
-            overflow: hidden;
-        }
-
-        /* The Interactive Spatial Grid Canvas */
-        #neuralCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
-            z-index: 1;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Ambient Cyberpunk Overlay Elements */
-        .glitch-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 4px, 6px 100%;
-            z-index: 2;
-            pointer-events: none;
-        }
-
-        /* Core UI Container Grid */
-        .interface-grid {
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            height: 100%;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            grid-template-rows: 80px 1fr;
-        }
-
-        /* Top Bar Diagnostics Header */
         header {
-            grid-column: 1 / span 2;
-            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
-            background: rgba(3, 4, 7, 0.85);
-            backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 40px;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-dim);
+            background: rgba(2, 3, 5, 0.95);
         }
 
-        .title-node {
-            font-size: 1.5rem;
+        .matrix-title {
             font-weight: 900;
-            letter-spacing: 4px;
-            text-shadow: 0 0 10px var(--neon-cyan);
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            color: var(--radar-green);
         }
 
-        .system-uptime {
-            font-size: 0.8rem;
-            color: var(--neon-cyan);
-            letter-spacing: 1px;
+        .auth-badge {
+            font-size: 0.7rem;
+            color: #fff;
+            border: 1px solid var(--radar-green);
+            padding: 4px 12px;
+            background: rgba(0, 255, 102, 0.05);
         }
 
-        /* Left Side Operation Control Deck */
-        .control-deck {
-            background: var(--panel-bg);
-            border-right: 1px solid rgba(0, 243, 255, 0.1);
-            backdrop-filter: blur(15px);
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+        main {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            padding: 15px;
+            max-width: 500px;
+            margin: 0 auto;
         }
 
-        .deck-section-title {
-            font-size: 0.8rem;
-            color: var(--neon-magenta);
+        .console-card {
+            background: var(--bg-deck);
+            border: 1px solid var(--border-dim);
+            padding: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+        }
+
+        .card-header-tag {
+            font-size: 0.7rem;
+            color: var(--radar-green);
             letter-spacing: 2px;
             text-transform: uppercase;
-            border-bottom: 1px dashed rgba(255, 0, 85, 0.3);
+            margin-bottom: 10px;
+            border-bottom: 1px dashed var(--border-dim);
             padding-bottom: 5px;
         }
 
-        .manifest-input-container {
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(0, 243, 255, 0.3);
-            padding: 15px;
-            border-radius: 4px;
-        }
-
-        .manifest-input-container label {
-            display: block;
-            font-size: 0.7rem;
-            color: var(--neon-cyan);
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-        }
-
-        .manifest-input-container input {
+        /* Live Geographic Map Frame Container */
+        .map-frame {
             width: 100%;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: #fff;
-            font-size: 1rem;
-            letter-spacing: 1px;
+            height: 250px;
+            background: #040806;
+            border: 1px solid rgba(0, 255, 102, 0.2);
         }
 
-        .btn-neural-fire {
-            background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), transparent);
-            border: 1px solid var(--neon-cyan);
-            color: var(--neon-cyan);
-            padding: 15px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(0,243,255,0.1);
+        /* Overriding Leaflet default colors to look like a dark tactical display */
+        .leaflet-tile {
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
         }
 
-        .btn-neural-fire:hover {
-            background: var(--neon-cyan);
-            color: var(--bg-deep);
-            box-shadow: 0 0 25px var(--neon-cyan);
-        }
-
-        /* Realtime Continuous Stream Log Terminal */
-        .live-stream-logger {
-            flex: 1;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 15px;
-            font-size: 0.7rem;
-            color: #64748b;
-            overflow-y: hidden;
-            line-height: 1.5;
-        }
-
-        .log-entry span {
-            color: var(--neon-cyan);
-        }
-
-        /* Right Central Viewport */
-        .matrix-viewport {
-            position: relative;
-            display: flex;
-            justify-content: flex-end;
-            align-items: flex-end;
-            padding: 40px;
-        }
-
-        /* Floating Tactical Diagnostics HUD */
-        .tactical-hud {
-            background: rgba(6, 9, 15, 0.9);
-            border-left: 4px solid var(--neon-magenta);
-            padding: 20px;
-            width: 350px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-        }
-
-        .hud-line {
-            font-size: 0.75rem;
-            margin-bottom: 8px;
-            color: #94a3b8;
-        }
-
-        .hud-line span {
+        .btn-gps-trigger {
+            width: 100%;
+            background: linear-gradient(90deg, rgba(0, 255, 102, 0.15), transparent);
+            border: 1px solid var(--radar-green);
             color: #ffffff;
+            padding: 15px;
+            font-size: 0.8rem;
             font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 5px;
         }
+
+        .btn-gps-trigger:hover {
+            background: var(--radar-green);
+            color: var(--bg-tactical);
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.4);
+        }
+
+        .telemetry-readout {
+            font-size: 0.75rem;
+            color: var(--text-digital);
+            line-height: 1.6;
+        }
+        .telemetry-readout span { color: #fff; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <canvas id="neuralCanvas"></canvas>
-    <div class="glitch-overlay"></div>
+    <header>
+        <div class="matrix-title">AEGISGRID // LIVE SECURE MATRIX</div>
+        <div class="auth-badge">OPERATOR // TIMMY</div>
+    </header>
 
-    <div class="interface-grid">
+    <main>
         
-        <header>
-            <div class="title-node">LOGISWIFT // NEURAL CORE</div>
-            <div class="system-uptime" id="clock">[ CONNECTED // NODE REGISTRY ACTIVE ]</div>
-        </header>
-
-        <div class="control-deck">
-            <div>
-                <div class="deck-section-title" style="margin-bottom: 15px;">Target Core Query</div>
-                <div class="manifest-input-container">
-                    <label>MANIPULATE NODE ADDR / TOKEN</label>
-                    <input type="text" id="targetToken" placeholder="LS-NODE-509" value="LS-NODE-771">
-                </div>
-                <button class="btn-neural-fire" style="width: 100%; margin-top: 15px;" onclick="triggerNeuralPulse()">Inject Pulse Sequence</button>
-            </div>
-
-            <div style="flex: 1; display: flex; flex-direction: column;">
-                <div class="deck-section-title" style="margin-bottom:10px;">Live Registry Telemetry Feed</div>
-                <div class="live-stream-logger" id="terminalLog">
-                    </div>
-            </div>
+        <div class="console-card">
+            <div class="card-header-tag">Live Geographic Edge Operations Grid Map</div>
+            <div id="map" class="map-frame"></div>
         </div>
 
-        <div class="matrix-viewport">
-            <div class="tactical-hud">
-                <div class="deck-section-title" style="margin-bottom: 12px; border-color: var(--neon-cyan);">System State Parameters</div>
-                <div class="hud-line">Core Hub Protocol: <span>SHIELD_ENGAGED</span></div>
-                <div class="hud-line">Nigeria Sector Load: <span>22.41% Optimal</span></div>
-                <div class="hud-line">Token Matrix Status: <span style="color: var(--neon-cyan);">ONLINE</span></div>
+        <div class="console-card">
+            <div class="card-header-tag">Target Location Vector Readouts</div>
+            <div class="telemetry-readout">
+                <div>Latitude Coordinate: <span id="lblLat">Awaiting Connection...</span></div>
+                <div>Longitude Coordinate: <span id="lblLng">Awaiting Connection...</span></div>
+                <div>Tracking Accuracy Margin: <span id="lblAccuracy">0 meters</span></div>
             </div>
+            <button class="btn-gps-trigger" onclick="initializeLiveTracking()">Activate Edge Beacon</button>
         </div>
 
-    </div>
+    </main>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // --- 1. SPATIAL INTERACTIVE NEURAL ENGINE (CANVAS) ---
-        const canvas = document.getElementById('neuralCanvas');
-        const ctx = canvas.getContext('2d');
+        // Global Map Variables Matrix
+        let map;
+        let operatorMarker;
+        let tacticalAccuracyCircle;
 
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
+        // Initialize Base Geographic Map Layout Center default coordinates (Lagos, Nigeria area)
+        function initMapGrid() {
+            map = L.map('map').setView([6.5244, 3.3792], 12);
+            
+            // Inject free dark tile topology lines
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
 
-        let particles = [];
-        const maxParticles = 90;
-        let mouse = { x: null, y: null, radius: 180 };
+        // Connect natively to the mobile hardware GPS pipeline
+        function initializeLiveTracking() {
+            if ("geolocation" in navigator) {
+                // Track current position sequentially in real time as the device moves
+                navigator.geolocation.watchPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
 
-        window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        });
+                        // Update tactical telemetry readout texts
+                        document.getElementById('lblLat').innerText = lat.toFixed(6);
+                        document.getElementById('lblLng').innerText = lng.toFixed(6);
+                        document.getElementById('lblAccuracy').innerText = `± \${accuracy.toFixed(1)}m`;
 
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
+                        const currentPos = [lat, lng];
 
-        window.addEventListener('mouseout', () => {
-            mouse.x = null;
-            mouse.y = null;
-        });
+                        if (!operatorMarker) {
+                            // First acquisition: Drop a custom tracking beacon on the grid map
+                            operatorMarker = L.marker(currentPos).addTo(map)
+                                .bindPopup("<b>TIMMY FIELD NODE</b><br>Active Tracking Enabled.")
+                                .openPopup();
+                            
+                            tacticalAccuracyCircle = L.circle(currentPos, {
+                                radius: accuracy,
+                                color: '#00ff66',
+                                fillColor: '#00ff66',
+                                fillOpacity: 0.15
+                            }).addTo(map);
 
-        class Particle {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 1.2;
-                this.vy = (Math.random() - 0.5) * 1.2;
-                this.radius = Math.random() * 3 + 1;
-                this.color = Math.random() > 0.3 ? '#00f3ff' : '#ff0055';
-            }
+                            // Snap map focus right to the active device location
+                            map.setView(currentPos, 15);
+                        } else {
+                            // Sequential movement update: Slide coordinates smoothly to the next point
+                            operatorMarker.setLatLng(currentPos);
+                            tacticalAccuracyCircle.setLatLng(currentPos).setRadius(accuracy);
+                        }
 
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-
-                // Bounce vectors off edge boundaries safely
-                if (this.x < 0 || this.x > width) this.vx *= -1;
-                if (this.y < 0 || this.y > height) this.vy *= -1;
-
-                // Mouse spatial magnetism interactivity calculation
-                if (mouse.x != null && mouse.y != null) {
-                    let dx = mouse.x - this.x;
-                    let dy = mouse.y - this.y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < mouse.radius) {
-                        let force = (mouse.radius - distance) / mouse.radius;
-                        this.x -= dx * force * 0.03;
-                        this.y -= dy * force * 0.03;
+                        // Execute Vocal Confirmation update loop
+                        if ('speechSynthesis' in window && !window.speechSynthesis.speaking) {
+                            let voiceMsg = new SpeechSynthesisUtterance("GPS operational edge tracking point locked. Coordinates transmitted successfully to the core repository.");
+                            voiceMsg.pitch = 0.8;
+                            voiceMsg.rate = 1.1;
+                            window.speechSynthesis.speak(voiceMsg);
+                        }
+                    },
+                    (error) => {
+                        console.error("GPS Acquisition Fault:", error.message);
+                        alert(`Tracking Failure: \${error.message}`);
+                    },
+                    {
+                        enableHighAccuracy: true, // Forces hardware inside mobile devices to fire high-power GPS antennas
+                        maximumAge: 0,
+                        timeout: 10000
                     }
-                }
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
+                );
+            } else {
+                alert("Hardware environment does not support native geolocation parameters.");
             }
         }
 
-        function initNetwork() {
-            particles = [];
-            for(let i=0; i<maxParticles; i++) {
-                particles.push(new Particle());
-            }
-        }
-
-        function drawNetworkMatrix() {
-            ctx.fillStyle = 'rgba(3, 4, 7, 0.2)'; // Creates gorgeous fluid trace shadows
-            ctx.fillRect(0, 0, width, height);
-
-            // Connect neighboring coordinate points inside matrix limit constraints
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-
-                for (let j = i + 1; j < particles.length; j++) {
-                    let dx = particles[i].x - particles[j].x;
-                    let dy = particles[i].y - particles[j].y;
-                    let dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < 120) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = particles[i].color === '#ff0055' ? 'rgba(255, 0, 85, 0.15)' : 'rgba(0, 243, 255, 0.12)';
-                        ctx.lineWidth = 0.8;
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-            requestAnimationFrame(drawNetworkMatrix);
-        }
-
-        // --- 2. THE PROACTIVE VOCAL PROTOCOL ENGINE (AUDIO & TEXT LOGS) ---
-        function runVocalTelemetry(message) {
-            // Check if standard system audio pipeline execution is active
-            if ('speechSynthesis' in window) {
-                // Instantly cancel any trailing spoken arrays to ensure clean performance queues
-                window.speechSynthesis.cancel();
-                
-                let utterance = new SpeechSynthesisUtterance(message);
-                utterance.rate = 1.05;  // Cyberpunk android delivery pacing pace
-                utterance.pitch = 0.85; // Low-frequency dark tone filter
-                
-                // Select an optimal system voice profile structure
-                let voices = window.speechSynthesis.getVoices();
-                if(voices.length > 0) {
-                    // Default to sharp premium system standard variants where accessible
-                    utterance.voice = voices.find(v => v.lang.includes('en-US')) || voices[0];
-                }
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        function writeToTerminalLog(text) {
-            const container = document.getElementById('terminalLog');
-            let timestamp = new Date().toLocaleTimeString();
-            let entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.innerHTML = `[${timestamp}] <span>>></span> ${text}`;
-            container.appendChild(entry);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function triggerNeuralPulse() {
-            let tokenInput = document.getElementById('targetToken').value.toUpperCase().trim();
-            if(!tokenInput) tokenInput = "SYSTEM-NODE-ALPHA";
-
-            // Visual explosion: Add high velocity temporary node structures inside array runtime
-            for(let k=0; k<12; k++) {
-                let burstNode = new Particle();
-                if(mouse.x != null) {
-                    burstNode.x = mouse.x + (Math.random() - 0.5) * 50;
-                    burstNode.y = mouse.y + (Math.random() - 0.5) * 50;
-                }
-                burstNode.vx *= 4; // High explosive velocity jump 
-                burstNode.vy *= 4;
-                particles.push(burstNode);
-            }
-
-            // Execute the system voice broadcast alongside data injection tracking log events
-            writeToTerminalLog(`Injected Pulse configuration matrix into target: ${tokenInput}`);
-            runVocalTelemetry(`LogiSwift core system update. Neural data sequence injected successfully into manifest tracking vector ${tokenInput}. All routing arrays verified.`);
-        }
-
-        // Continuous simulated stream logging framework feed updates
-        setInterval(() => {
-            const lines = [
-                "Registry node cluster synchronization status normal.",
-                "Simulating packet trajectory vectors through Lagos sorting sector.",
-                "Waybill Manifest cryptographic matching signatures locked.",
-                "Bulk routing simulation execution stack optimized completely.",
-                "Telemetry audit completed. Absolute security parameters valid."
-            ];
-            let pick = lines[Math.floor(Math.random() * lines.length)];
-            writeToTerminalLog(pick);
-        }, 4000);
-
-        // Run Engines
-        initNetwork();
-        drawNetworkMatrix();
-        
-        // Warm up and initialize speech voice array pipeline systems smoothly 
-        window.speechSynthesis.getVoices();
-        writeToTerminalLog("LogiSwift Central Operating System Initialization Sequence... Ready.");
+        // Initialize setup on complete layout loads
+        window.onload = initMapGrid;
     </script>
 </body>
 </html>
