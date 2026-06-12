@@ -54,14 +54,18 @@ io.on('connection', (socket) => {
                 if (otherId !== socket.id && activeNodes[otherId].lat) {
                     const dist = calculateDistance(data.lat, data.lon, activeNodes[otherId].lat, activeNodes[otherId].lon);
                     if (dist <= 500) {
-                        io.emit('system-alert', { message: `Convergence Link: Node ${socket.id.slice(0,4)} and Node ${otherId.slice(0,4)} inside ${Math.round(dist)}m!` });
+                        io.emit('system-alert', { type: 'PROXIMITY', message: `Convergence Link: Node ${socket.id.slice(0,4)} and Node ${otherId.slice(0,4)} inside ${Math.round(dist)}m!` });
                     }
                 }
             });
         }
     });
 
-    // P2P VOICE STREAM ROUTER: Pipes binary voice chunks instantly to all other nodes
+    // ACOUSTIC SPIKE ROUTER: Relays environmental sound danger warnings to the entire command structure
+    socket.on('acoustic-spike-breach', (dbLevel) => {
+        io.emit('system-alert', { type: 'AUDIO_SPIKE', message: `Acoustic Spike Anomaly: Node ${socket.id.slice(0,4)} environment registered severe audio surge (${Math.round(dbLevel)} dB)!` });
+    });
+
     socket.on('voice-audio-chunk', (audioData) => {
         socket.broadcast.emit('incoming-voice-audio', { sender: socket.id.slice(0,4), audio: audioData });
     });
