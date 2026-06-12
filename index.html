@@ -2,388 +2,119 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AEGISGRID // Unified Tactical Command</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AEGISGRID // SECURE COMMAND</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg-tactical: #020305;
-            --bg-deck: rgba(7, 12, 10, 0.9);
-            --radar-green: #00ff66;
-            --threat-amber: #ffaa00;
-            --threat-critical: #ff2222;
-            --border-dim: rgba(0, 255, 102, 0.25);
-            --text-digital: #a3b8b0;
+        :root { 
+            --bg-tactical: #020305; --radar-green: #00ff66; --threat-amber: #ffaa00; --threat-red: #ff0000;
+            --border-dim: rgba(0, 255, 102, 0.25); --text-digital: #a3b8b0; 
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Courier New', Courier, monospace;
-        }
-
-        body, html {
-            background-color: var(--bg-tactical);
-            color: #ffffff;
-            width: 100%;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Original CRT Interlacing Screen Overlay Filter */
-        body::after {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(10, 16, 14, 0) 50%, rgba(0, 0, 0, 0.3) 50%), linear-gradient(90deg, rgba(0, 255, 102, 0.03), rgba(0, 0, 0, 0), rgba(255, 0, 0, 0.02));
-            z-index: 9999;
-            background-size: 100% 4px, 6px 100%;
-            pointer-events: none;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border-dim);
-            background: rgba(2, 3, 5, 0.95);
-            backdrop-filter: blur(8px);
-        }
-
-        .matrix-title {
-            font-weight: 900;
-            font-size: 1.1rem;
-            letter-spacing: 3px;
-            color: var(--radar-green);
-            text-shadow: 0 0 8px rgba(0, 255, 102, 0.4);
-        }
-
-        .auth-badge {
-            font-size: 0.7rem;
-            letter-spacing: 2px;
-            color: #fff;
-            border: 1px solid var(--radar-green);
-            padding: 4px 12px;
-            background: rgba(0, 255, 102, 0.05);
-        }
-
-        main {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            padding: 15px;
-            max-width: 500px; /* Locked mobile tactical configuration */
-            margin: 0 auto;
-        }
-
-        .console-card {
-            background: var(--bg-deck);
-            border: 1px solid var(--border-dim);
-            border-radius: 2px;
-            padding: 15px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.7);
-        }
-
-        .card-header-tag {
-            font-size: 0.7rem;
-            color: var(--radar-green);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            border-bottom: 1px dashed var(--border-dim);
-            padding-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        /* Live Map Container Housing Frame */
-        .map-frame {
-            width: 100%;
-            height: 220px;
-            background: #040806;
-            border: 1px solid rgba(0, 255, 102, 0.2);
-            border-radius: 2px;
-        }
-
-        /* Custom Map Matrix Layer - Forces standard tiles into an obsidian dark layout */
-        .leaflet-tile {
-            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-        }
-
-        /* Beautiful Neon Ticker Screen */
-        .stream-logger-view {
-            font-size: 0.65rem;
-            color: var(--text-digital);
-            line-height: 1.5;
-            background: rgba(0,0,0,0.6);
-            padding: 12px;
-            border-left: 2px solid var(--radar-green);
-            height: 90px;
-            overflow-y: hidden;
-        }
-        .stream-logger-view span { color: var(--radar-green); }
-
-        .routing-metrics {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            margin-bottom: 6px;
-        }
-        .metric-val { color: var(--radar-green); font-weight: bold; }
-        .metric-val.alert { color: var(--threat-critical); }
-
-        /* Form Inputs Matrix */
-        .form-block {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 5px;
-        }
-
-        .input-node-wrapper {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(0, 255, 102, 0.25);
-            padding: 10px 15px;
-        }
-
-        .input-node-wrapper label {
-            display: block;
-            font-size: 0.65rem;
-            color: var(--text-digital);
-            margin-bottom: 5px;
-            letter-spacing: 1px;
-        }
-
-        .input-node-wrapper select {
-            width: 100%;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: #fff;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-        }
-
-        .input-node-wrapper select option {
-            background: var(--bg-tactical);
-            color: #fff;
-        }
-
-        /* Glowing Action Control Trigger Button */
-        .btn-interdiction-trigger {
-            width: 100%;
-            background: linear-gradient(90deg, rgba(0, 255, 102, 0.15), transparent);
-            border: 1px solid var(--radar-green);
-            color: #ffffff;
-            padding: 15px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 5px;
-        }
-
-        .btn-interdiction-trigger:hover {
-            background: var(--radar-green);
-            color: var(--bg-tactical);
-            box-shadow: 0 0 20px rgba(0, 255, 102, 0.4);
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', monospace; }
+        body { background: var(--bg-tactical); color: #fff; display: flex; flex-direction: column; min-height: 100vh; }
+        header { padding: 15px 20px; border-bottom: 2px solid var(--radar-green); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); }
+        .brand h1 { color: var(--radar-green); font-size: 1.1rem; letter-spacing: 2px; }
+        .nav-bar { display: flex; gap: 15px; padding: 10px 20px; background: rgba(0,255,102,0.05); border-bottom: 1px solid var(--border-dim); }
+        .nav-btn { cursor: pointer; color: #a3b8b0; font-size: 0.7rem; text-transform: uppercase; border: none; background: none; }
+        .nav-btn:hover { color: var(--radar-green); }
+        main { flex: 1; padding: 20px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+        .console { border: 1px solid var(--border-dim); padding: 15px; background: rgba(7, 12, 10, 0.9); }
+        #map { width: 100%; height: 500px; border: 1px solid var(--radar-green); }
+        .widget { margin-top: 15px; padding: 15px; border: 1px solid var(--border-dim); background: #0a0e0c; }
+        .btn-main { width: 100%; padding: 12px; margin-top: 10px; background: transparent; border: 1px solid var(--radar-green); color: var(--radar-green); cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .btn-main:hover { background: var(--radar-green); color: #000; }
+        @media (max-width: 768px) { main { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="matrix-title">AEGISGRID // UNIFIED CONTROL</div>
-        <div class="auth-badge">OPERATOR // TIMMY</div>
-    </header>
+<header id="mainHeader">
+    <div class="brand"><h1>AEGISGRID // SECURE</h1></div>
+    <div style="font-size: 0.7rem;">AI STATUS: <span id="aiStatus" style="color:var(--radar-green)">ONLINE</span></div>
+</header>
 
-    <main>
-        
-        <div class="console-card">
-            <div class="card-header-tag">
-                <span>Geographic Target Tracking Grid</span>
-                <span style="color: var(--threat-amber);" id="systemStatusBadge">ACTIVE_MAP_READY</span>
-            </div>
-            <div id="map" class="map-frame"></div>
+<div class="nav-bar">
+    <button class="nav-btn" onclick="showSection('dashboard')">FIELD OPS</button>
+    <button class="nav-btn" onclick="requestAdminAccess()">COMMAND TOWER</button>
+</div>
+
+<main>
+    <section id="dashboard">
+        <div class="console"><div id="map"></div></div>
+    </section>
+    
+    <section id="admin" style="display:none;" class="console">
+        <h2 style="color:var(--radar-green); font-size: 1rem;">ADMIN COMMAND</h2>
+        <div class="widget">
+            <button class="btn-main" onclick="setSystemStatus('GREEN')">STATUS: GREEN</button>
+            <button class="btn-main" onclick="setSystemStatus('RED')">STATUS: RED</button>
         </div>
-
-        <div class="console-card">
-            <div class="card-header-tag">Autonomous Network State</div>
-            <div class="routing-metrics">
-                <span>Latitude Node:</span>
-                <span id="lblLat" class="metric-val">Awaiting Lock...</span>
-            </div>
-            <div class="routing-metrics">
-                <span>Longitude Node:</span>
-                <span id="lblLng" class="metric-val">Awaiting Lock...</span>
-            </div>
-            <div class="routing-metrics">
-                <span>Threat Avoidance Detour:</span>
-                <span id="txtMitigationStatus" class="metric-val">Standby Mode</span>
-            </div>
+        <div class="widget">
+            <div id="logArea" style="font-size: 0.5rem; height: 120px; overflow-y: scroll;">[SYSTEM_LOG_INITIALIZED]</div>
+            <button class="btn-main" onclick="exportLogs()">EXPORT DATA</button>
         </div>
+    </section>
 
-        <div class="console-card">
-            <div class="card-header-tag">Live System Telemetry Stream</div>
-            <div class="stream-logger-view" id="telemetryTerminalLog">
-                [INIT] Strategic Defenses Online... Database link active.<br>
-                [INFO] Ready to establish secure coordinate mapping.
+    <aside id="sidebar">
+        <div class="console">
+            <h2 style="font-size: 0.8rem; color:var(--radar-green);">COGNITIVE FEED</h2>
+            <div class="widget">
+                <div class="data-point"><span>NODES:</span><span id="nodeCount">0</span></div>
             </div>
+            <button class="btn-main" onclick="transmitData()">TRANSMIT TELEMETRY</button>
         </div>
+    </aside>
+</main>
 
-        <div class="console-card">
-            <div class="card-header-tag">Execute Perimeter Evaluation</div>
-            <div class="form-block">
-                
-                <div class="input-node-wrapper">
-                    <label>Operational Target Sector Zone</label>
-                    <select id="sectorZone">
-                        <option value="Lagos West Logistics Gateway">Lagos West Logistics Gateway</option>
-                        <option value="Abuja Central Infrastructure Hub">Abuja Central Infrastructure Hub</option>
-                        <option value="Port Harcourt Transit Route Delta">Port Harcourt Transit Route Delta</option>
-                        <option value="Kano Northern Boundary Sector">Kano Northern Boundary Sector</option>
-                    </select>
-                </div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    let supabase;
+    
+    // Initialize Supabase safely
+    window.addEventListener('load', () => {
+        supabase = supabase.createClient(
+            'https://fmgjwxsdxydcwxddvpchf.supabase.co', 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtZ2p3eHNkeWdjd3hkZHZwY2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNTk3NjksImV4cCI6MjA5NjgzNTc2OX0.fgcojr3zEv4riwXmnKPDFSLElU7TaGJLAIr4uljRn_8'
+        );
+    });
+    
+    let map = L.map('map').setView([9.0820, 8.6753], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    let nodeCount = 0;
 
-                <div class="input-node-wrapper">
-                    <label>Threat Level Severity Classification</label>
-                    <select id="threatClassification">
-                        <option value="Low Risk">Condition Green: Clear Corridors</option>
-                        <option value="Critical Attack Breach">Condition Red: Active Threat Detected</option>
-                    </select>
-                </div>
-
-                <button class="btn-interdiction-trigger" onclick="runUnifiedCommandPipeline()">Activate Shield Node</button>
-
-            </div>
-        </div>
-
-    </main>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        let map;
-        let operatorMarker;
-        let accuracyCircle;
-        let dynamicDetourLine;
-
-        // Initialize Dark Map Base Layout Center default coordinates (Lagos)
-        function initTacticalMap() {
-            map = L.map('map').setView([6.5244, 3.3792], 11);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19
-            }).addTo(map);
+    async function transmitData() {
+        if (!supabase) {
+            alert("System initializing... wait a moment.");
+            return;
         }
 
-        // The Ultimate Combined Pipeline Engine
-        function runUnifiedCommandPipeline() {
-            const sector = document.getElementById('sectorZone').value;
-            const threat = document.getElementById('threatClassification').value;
-            const logger = document.getElementById('telemetryTerminalLog');
-            const statusBadge = document.getElementById('systemStatusBadge');
-            const mitigationText = document.getElementById('txtMitigationStatus');
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const { error } = await supabase.from('logs').insert([{
+                node_hash: "AEG-" + Math.random().toString(36).substring(2, 12).toUpperCase(),
+                latitude: pos.coords.latitude,
+                longitude: pos.coords.longitude
+            }]);
 
-            logger.innerHTML += `<br><span>[SCAN]</span> Querying physical hardware environment sensors...`;
-            logger.scrollTop = logger.scrollHeight;
-
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    
-                    // Drop text coordinates straight into display grid
-                    document.getElementById('lblLat').innerText = lat.toFixed(6);
-                    document.getElementById('lblLng').innerText = lng.toFixed(6);
-
-                    const currentPos = [lat, lng];
-
-                    // Map Marker Configuration
-                    if (!operatorMarker) {
-                        operatorMarker = L.marker(currentPos).addTo(map)
-                            .bindPopup(`<b>TIMMY ASSURED NODE</b><br>Sector: \${sector}`)
-                            .openPopup();
-                        map.setView(currentPos, 14);
-                    } else {
-                        operatorMarker.setLatLng(currentPos);
-                    }
-
-                    // Clear any lingering old line visualizer assets safely
-                    if (dynamicDetourLine) map.removeLayer(dynamicDetourLine);
-
-                    // Execute Logic Split Based on Selected Threat Classification
-                    if (threat === "Critical Attack Breach") {
-                        statusBadge.innerText = "BYPASS_ENGAGED";
-                        statusBadge.style.color = "var(--threat-critical)";
-                        mitigationText.innerText = "Diverting Around Threat Vector";
-                        mitigationText.style.color = "var(--threat-critical)";
-
-                        logger.innerHTML += `<br><span style="color:var(--threat-critical)">[ALERT]</span> Critical hazard in \${sector}. Plotting backup waypoint array lines.`;
-
-                        // Draw a clear glowing tactical alternative path directly onto the real map!
-                        const detourWaypoints = [
-                            currentPos,
-                            [lat + 0.015, lng + 0.015],
-                            [lat + 0.025, lng + 0.030]
-                        ];
-                        dynamicDetourLine = L.polyline(detourWaypoints, {
-                            color: '#ffaa00',
-                            weight: 4,
-                            dashArray: '5, 10'
-                        }).addTo(map);
-
-                        // Cold Military AI Voice Broadcast Output Execution
-                        executeVocalNotice(`Tactical alert. Operator Timmy, a security hazard has been registered inside \${sector}. System has successfully bypassed the compromised coordinate line. Safe alternative lane drawn onto geographic interface.`);
-
-                    } else {
-                        // Standard Clear Baseline Paths Configuration
-                        statusBadge.innerText = "SYSTEM_NORMAL";
-                        statusBadge.style.color = "var(--radar-green)";
-                        mitigationText.innerText = "Standby Mode - Path Clear";
-                        mitigationText.style.color = "var(--radar-green)";
-
-                        logger.innerHTML += `<br><span>[OK]</span> No active bottlenecks verified inside \${sector}. Node state optimal.`;
-
-                        const standardPath = [
-                            currentPos,
-                            [lat + 0.020, lng + 0.020]
-                        ];
-                        dynamicDetourLine = L.polyline(standardPath, {
-                            color: '#00ff66',
-                            weight: 3
-                        }).addTo(map);
-
-                        executeVocalNotice(`AegisGrid status update. Perimeter check inside \${sector} returns optimal tracking parameters. Operational lane remains verified clear.`);
-                    }
-                    logger.scrollTop = logger.scrollHeight;
-                }, 
-                (err) => {
-                    alert(`GPS Failed: \${err.message}`);
-                }, { enableHighAccuracy: true });
+            if (!error) {
+                nodeCount++;
+                document.getElementById('nodeCount').innerText = nodeCount;
+                document.getElementById('logArea').innerHTML += `<br>> NODE_${nodeCount}: SYNCED TO CLOUD`;
             } else {
-                alert("Hardware Environment does not support active telemetry tracking.");
+                console.error(error);
+                alert("Sync Failed: Check your table permissions.");
             }
-        }
+        });
+    }
 
-        function executeVocalNotice(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                let utterance = new SpeechSynthesisUtterance(text);
-                utterance.pitch = 0.75;
-                utterance.rate = 1.0;
-                window.speechSynthesis.speak(utterance);
-            }
-        }
+    function showSection(id) {
+        document.getElementById('dashboard').style.display = (id === 'dashboard') ? 'block' : 'none';
+        document.getElementById('admin').style.display = (id === 'admin') ? 'block' : 'none';
+    }
 
-        window.onload = initTacticalMap;
-    </script>
+    function requestAdminAccess() {
+        if (prompt("ENTER MASTER KEY") === "TIMMY2026") showSection('admin');
+    }
+</script>
 </body>
 </html>
