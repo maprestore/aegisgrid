@@ -24,7 +24,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     const deltaPhi = (lat2 - lat1) * Math.PI / 180;
     const deltaLambda = (lon2 - lon1) * Math.PI / 180;
     const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
-              Math.cos(phi1) * Math.cos(phi2) +
+              Math.cos(phi1) * Math.cos(phi2) *
               Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
     return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
@@ -61,9 +61,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    // DISPLAY MATRIX STITCHING ROUTER: Emits viewport segmentation rules across the matrix array
     socket.on('assign-stitch-matrix', (matrixConfiguration) => {
-        // matrixConfiguration: { targetNodeId, role: 'LEFT' | 'RIGHT' | 'STANDARD' }
         if (activeNodes[matrixConfiguration.targetNodeId]) {
             activeNodes[matrixConfiguration.targetNodeId].stitchRole = matrixConfiguration.role;
             io.to(matrixConfiguration.targetNodeId).emit('execute-display-stitch', matrixConfiguration.role);
@@ -71,12 +69,14 @@ io.on('connection', (socket) => {
         }
     });
 
-    // GLITCH STEGANOGRAPHY BROKER: Relays sudden visual signal triggers instantly
+    socket.on('trigger-remote-pulse-ping', (targetNodeId) => {
+        io.emit('execute-spatial-shockwave', targetNodeId);
+    });
+
     socket.on('trigger-subliminal-glitch', (signalTypeCode) => {
         io.emit('incoming-glitch-signal', { origin: socket.id.slice(0,4), type: signalTypeCode });
     });
 
-    // ACOUSTIC RANGING RINGER: Directs peer-to-peer sound pulse loops
     socket.on('request-acoustic-ping-pulse', () => {
         socket.broadcast.emit('trigger-acoustic-chirp-response');
     });
@@ -112,12 +112,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('deploy-waypoint', (wpData) => {
-        const newWp = { id: Date.now(), ...wpData };
-        activeWaypoints.push(newWp);
-        io.emit('waypoint-broadcast', newWp);
-    });
-
     socket.on('radio-message', (msg) => {
         io.emit('radio-broadcast', { sender: socket.id.slice(0, 5), text: msg, timestamp: Date.now() });
     });
@@ -139,4 +133,4 @@ setInterval(() => {
 }, 30000);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`AegisGrid Grandmaster Engine online on port ${PORT}`));
+server.listen(PORT, () => console.log(`AegisGrid Grandmaster Ultimate running on port ${PORT}`));
