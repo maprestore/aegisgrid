@@ -1,44 +1,31 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const { Pool } = require('pg');
-
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, 'public')));
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-});
+const MASTER_HASH = process.env.ADMIN_KEY || "TIMMY2026";
 
-app.post('/api/threats/inject', async (req, res) => {
-    const { sector, severity } = req.body;
-    const incidentId = `INCIDENT-${Math.floor(100 + Math.random() * 900)}`;
-    const timestamp = new Date().toLocaleTimeString();
-    try {
-        await pool.query("INSERT INTO incidents (id, sector, severity, timestamp) VALUES ($1, $2, $3, $4)", [incidentId, sector, severity, timestamp]);
-        res.status(201).json({ status: "SUCCESS", injectedNode: { id: incidentId, sector } });
-    } catch (err) {
-        res.status(500).json({ error: "Failed" });
-    }
-});
-
-app.get('/api/fleet/all', async (req, res) => {
-    try {
-        const result = await pool.query("SELECT * FROM incidents ORDER BY timestamp DESC LIMIT 50");
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: "Failed" });
+app.post('/api/authorize-admin', (req, res) => {
+    const { key } = req.body;
+    
+    if (key === MASTER_HASH) {
+        res.status(200).json({ authorized: true, msg: "ACCESS_GRANTED_ARCHITECT" });
+    } else {
+        res.status(401).json({ authorized: false, msg: "SECURITY_BREACH_DETECTED" });
     }
 });
 
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
-    console.log(`Unified single-page system running on port ${PORT}`);
+    console.log(`\n=============================================================`);
+    console.log(`AEGISGRID // ULTRA CORE LEVEL 3 TERMINAL RUNNING ON PORT ${PORT}`);
+    console.log(`ALL INTEGRATED CHANNELS ENGAGED: SAFE GEOFENCING & RADIOS LIVE`);
+    console.log(`=============================================================\n`);
 });
