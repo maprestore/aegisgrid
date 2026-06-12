@@ -5,132 +5,50 @@ const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { 
-    cors: { origin: "*" },
-    maxHttpBufferSize: 1e7
-});
+const io = new Server(server, { cors: { origin: "*" } });
 
-app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-let activeNodes = {};
-let activeWaypoints = [];
-const HEARTBEAT_TIMEOUT = 300000; 
-
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371e3;
-    const phi1 = lat1 * Math.PI / 180;
-    const phi2 = lat2 * Math.PI / 180;
-    const deltaPhi = (lat2 - lat1) * Math.PI / 180;
-    const deltaLambda = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
-              Math.cos(phi1) * Math.cos(phi2) *
-              Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
-    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-}
-
-app.post('/api/verify-tower', (req, res) => {
-    const { pass } = req.body;
-    if (pass === "TIMMY2026") {
-        return res.json({ success: true, token: "AUTH_VALIDATED_CORE_PROXY" });
-    }
-    res.status(401).json({ success: false, message: "UNAUTHORIZED" });
-});
+let globalTacticalNodes = {};
 
 io.on('connection', (socket) => {
-    console.log(`Node Online: ${socket.id}`);
-    activeNodes[socket.id] = { id: socket.id, lastSeen: Date.now(), lat: null, lon: null, auditData: null, stitchRole: null };
-
-    socket.emit('sync-waypoints', activeWaypoints);
+    globalTacticalNodes[socket.id] = {
+        id: socket.id,
+        lat: null,
+        lon: null,
+        isGhost: false,
+        vitals: { hr: 72, temp: 36.6, status: "NOMINAL" }
+    };
 
     socket.on('telemetry-pulse', (data) => {
-        if (activeNodes[socket.id]) {
-            activeNodes[socket.id].lat = data.lat;
-            activeNodes[socket.id].lon = data.lon;
-            activeNodes[socket.id].lastSeen = Date.now();
-            io.emit('node-update', activeNodes);
-            
-            Object.keys(activeNodes).forEach(otherId => {
-                if (otherId !== socket.id && activeNodes[otherId].lat) {
-                    const dist = calculateDistance(data.lat, data.lon, activeNodes[otherId].lat, activeNodes[otherId].lon);
-                    if (dist <= 500) {
-                        io.emit('system-alert', { type: 'PROXIMITY', message: `Convergence Link: Node ${socket.id.slice(0,4)} and Node ${otherId.slice(0,4)} inside ${Math.round(dist)}m!` });
-                    }
-                }
-            });
+        if (globalTacticalNodes[socket.id]) {
+            globalTacticalNodes[socket.id].lat = data.lat;
+            globalTacticalNodes[socket.id].lon = data.lon;
+            io.emit('global-matrix-update', globalTacticalNodes);
         }
     });
 
-    socket.on('assign-stitch-matrix', (matrixConfiguration) => {
-        if (activeNodes[matrixConfiguration.targetNodeId]) {
-            activeNodes[matrixConfiguration.targetNodeId].stitchRole = matrixConfiguration.role;
-            io.to(matrixConfiguration.targetNodeId).emit('execute-display-stitch', matrixConfiguration.role);
-            io.emit('node-update', activeNodes);
-        }
+    socket.on('inject-synthetic-cluster', (clusterData) => {
+        Object.assign(globalTacticalNodes, clusterData);
+        io.emit('global-matrix-update', globalTacticalNodes);
     });
 
-    socket.on('trigger-remote-pulse-ping', (targetNodeId) => {
-        io.emit('execute-spatial-shockwave', targetNodeId);
-    });
-
-    socket.on('trigger-subliminal-glitch', (signalTypeCode) => {
-        io.emit('incoming-glitch-signal', { origin: socket.id.slice(0,4), type: signalTypeCode });
-    });
-
-    socket.on('request-acoustic-ping-pulse', () => {
-        socket.broadcast.emit('trigger-acoustic-chirp-response');
-    });
-
-    socket.on('acoustic-spike-breach', (dbLevel) => {
-        io.emit('system-alert', { type: 'AUDIO_SPIKE', message: `Acoustic Spike Anomaly: Node ${socket.id.slice(0,4)} registered severe audio surge (${Math.round(dbLevel)} dB)!` });
-    });
-
-    socket.on('voice-audio-chunk', (audioData) => {
-        socket.broadcast.emit('incoming-voice-audio', { sender: socket.id.slice(0,4), audio: audioData });
-    });
-
-    socket.on('bulk-mesh-sync', (historicalPackets) => {
-        historicalPackets.forEach(packet => {
-            io.emit('radio-broadcast', { sender: `${socket.id.slice(0,4)}-MESH`, text: `[OFFGRID_LOG]: ${packet.text}`, timestamp: packet.time });
+    socket.on('transmit-secure-packet', (payload) => {
+        io.emit('broadcast-secure-packet', {
+            sender: socket.id.slice(0, 5),
+            message: payload.message,
+            stegoData: payload.stegoData || null
         });
     });
 
-    socket.on('transmit-stego-package', (payload) => {
-        io.emit('receive-stego-package', { sender: socket.id.slice(0,5), imageData: payload.imageData });
-    });
-
-    socket.on('trigger-remote-audit', (targetNodeId) => {
-        if (io.sockets.sockets.get(targetNodeId)) {
-            io.to(targetNodeId).emit('execute-hardware-audit');
-        }
-    });
-
-    socket.on('submit-audit-payload', (auditData) => {
-        if (activeNodes[socket.id]) {
-            activeNodes[socket.id].auditData = auditData;
-            io.emit('node-update', activeNodes);
-        }
-    });
-
-    socket.on('radio-message', (msg) => {
-        io.emit('radio-broadcast', { sender: socket.id.slice(0, 5), text: msg, timestamp: Date.now() });
-    });
-
     socket.on('disconnect', () => {
-        delete activeNodes[socket.id];
-        io.emit('node-disconnect', socket.id);
+        delete globalTacticalNodes[socket.id];
+        Object.keys(globalTacticalNodes).forEach(id => {
+            if (id.startsWith(`GHOST-${socket.id}`)) delete globalTacticalNodes[id];
+        });
+        io.emit('global-matrix-update', globalTacticalNodes);
     });
 });
 
-setInterval(() => {
-    const now = Date.now();
-    Object.keys(activeNodes).forEach(id => {
-        if (now - activeNodes[id].lastSeen > HEARTBEAT_TIMEOUT) {
-            io.emit('node-timeout', id);
-            delete activeNodes[id];
-        }
-    });
-}, 30000);
-
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`AegisGrid Grandmaster Ultimate running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Aegis Strategic Node online on port ${PORT}`));
