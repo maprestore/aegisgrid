@@ -3,36 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AEGISGRID // GRANDMASTER MASTER CORE</title>
+    <title>AEGISGRID // MATRIX GRANDMASTER SUPREME</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     
     <style>
-        :root { --neon-green: #00ff00; --dark-core: rgba(10, 15, 10, 0.96); --alert-red: #ff3333; --cyber-blue: #00ffff; --infrared: #ff0055; }
+        :root { --neon-green: #00ff00; --dark-core: rgba(10, 15, 10, 0.94); --alert-red: #ff3333; --cyber-blue: #00ffff; --infrared: #ff0055; --glow-strength: 8px; }
         body, html { margin:0; padding:0; width:100%; height:100%; background:#000; font-family:'Courier New', monospace; overflow:hidden; color:#fff; transition: background 0.5s, transform 0.4s ease; }
         
-        /* WebGL Visual Glitch Overlay Layout Class */
+        .holo-prism-active { transform: scaleY(-1) rotate(180deg); filter: contrast(2) saturate(2) brightness(1.5); }
         .glitch-flash-active { animation: glitchPulseScreen 0.18s steps(2) 3; filter: hue-rotate(180deg) invert(1) !important; }
         @keyframes glitchPulseScreen { 0% { transform: translate(4px, -2px); } 50% { transform: translate(-3px, 3px); } 100% { transform: translate(0, 0); } }
 
-        /* Multi-Node Canvas Tile Segment Transformation Classes */
-        .stitch-role-left { transform: scale(2) translateX(25%); }
-        .stitch-role-right { transform: scale(2) translateX(-25%); }
-
         #mainContainer { display:flex; width:100%; height:100%; position:relative; }
         #map { flex:1; height:100%; background:#020202; z-index:1; transition: all 0.4s; }
-        #sidebarPanel { width:340px; height:100%; background:var(--dark-core); border-left:2px solid var(--neon-green); z-index:10; display:flex; flex-direction:column; box-sizing:border-box; transition: width 0.4s; }
-        .panel-section { border-bottom:1px solid rgba(0,255,0,0.25); padding:8px; box-sizing:border-box; }
-        h2, h3 { color:var(--neon-green); margin:0 0 4px 0; font-size:11px; letter-spacing:1px; text-transform:uppercase; }
+        
+        /* 1. CSS LATENCY PING STROKE DASH MATRIX SPEED PATHS */
+        .animated-laser-arc-path { stroke-dasharray: 10, 30; animation: pingLineSprintingFlow 1.2s linear infinite; }
+        @keyframes pingLineSprintingFlow { to { stroke-dashoffset: -40; } }
+
+        /* Remote Expanding Node Shockwave Setup styles */
+        .node-expanding-shockwave-ring { border: 2px solid var(--neon-green); background: rgba(0,255,0,0.05); border-radius: 50%; animation: markerPulseRingClearance 1.8s ease-out infinite; pointer-events: none; }
+        @keyframes markerPulseRingClearance { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(3.5); opacity: 0; } }
+
+        /* Gyro Crosshair Overlay Layout Positionings */
+        #gyroHUDCrosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 140px; border: 1px dashed rgba(0, 255, 255, 0.25); border-radius: 50%; pointer-events: none; z-index: 2; transition: transform 0.05s linear; }
+        #gyroHUDCrosshair::before { content:''; position:absolute; top:50%; left:-10px; right:-10px; height:1px; background:rgba(0,255,255,0.15); }
+        #gyroHUDCrosshair::after { content:''; position:absolute; left:50%; top:-10px; bottom:-10px; width:1px; background:rgba(0,255,255,0.15); }
+
+        #sidebarPanel { width:340px; height:100%; background:var(--dark-core); border-left:2px solid var(--neon-green); box-shadow: 0 0 var(--glow-strength) var(--neon-green); z-index:10; display:flex; flex-direction:column; box-sizing:border-box; position:relative; transition: width 0.4s, box-shadow 0.05s linear; }
+        #particleCanvasBackground { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:-1; opacity:0.35; }
+
+        .panel-section { border-bottom:1px solid rgba(0,255,0,0.25); padding:8px; box-sizing:border-box; background:transparent; z-index:11; }
+        h2, h3 { color:var(--neon-green); margin:0 0 4px 0; font-size:11px; letter-spacing:1px; text-transform:uppercase; text-shadow: 0 0 4px rgba(0,255,0,0.6); }
         #terminalLogs { flex:1; background:rgba(0,4,0,0.85); overflow-y:auto; font-size:10px; padding:6px; border:1px solid rgba(0,255,0,0.15); color:#77ff77; margin-bottom:4px; }
         .btn { background:transparent; border:1px solid var(--neon-green); color:var(--neon-green); padding:5px 8px; font-family:monospace; font-size:10px; font-weight:bold; cursor:pointer; width:100%; box-sizing:border-box; margin-bottom:4px; text-transform:uppercase; }
         .btn:hover { background:rgba(0,255,0,0.15); }
         .btn-blue { border-color:var(--cyber-blue); color:var(--cyber-blue); }
         .btn-danger { border-color:var(--alert-red); color:var(--alert-red); }
-        #radioChatBox, #stegoDisplayBox { height:65px; background:rgba(0,0,0,0.4); border:1px solid rgba(0,255,0,0.15); overflow-y:auto; padding:4px; font-size:10px; color:#00ffaa; margin-bottom:4px; }
+        #radioChatBox, #stegoDisplayBox { height:65px; background:rgba(0,0,0,0.6); border:1px solid rgba(0,255,0,0.15); overflow-y:auto; padding:4px; font-size:10px; color:#00ffaa; margin-bottom:4px; }
+        
         #videoContainer { width:100%; height:85px; background:#000; position:relative; border:1px solid rgba(0,255,0,0.2); overflow:hidden; }
-        #webcamStream { width:100%; height:100%; object-fit:cover; filter: sepia(1) hue-rotate(90deg) saturate(2.5); }
+        #webcamStream, #audioSpectrogramWaterfall { width:100%; height:100%; position:absolute; top:0; left:0; object-fit:cover; }
+        #webcamStream { filter: sepia(1) hue-rotate(90deg) saturate(2.5); z-index: 2; }
+        #audioSpectrogramWaterfall { z-index: 1; background: #000; display: none; }
+
         .hud-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:9px; color:#999; }
         .ptt-active { background: var(--alert-red) !important; color: #000 !important; border-color: #fff !important; }
         
@@ -41,12 +57,29 @@
         #arTargetOverlay { position:absolute; top:0; left:0; width:100%; height:100%; z-index:6; pointer-events:none; }
         .ar-node-tag { position:absolute; background:rgba(0,255,255,0.8); border:1px solid #fff; padding:4px; font-size:10px; color:#000; font-weight:bold; border-radius:3px; }
         
+        #cyberFaceScanner { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        #faceScanVideo { width:240px; height:240px; border-radius:50%; object-fit:cover; border:2px dashed var(--neon-green); transform: scaleX(-1); }
+        #scanGridOverlay { position:absolute; width:260px; height:260px; border:1px solid var(--cyber-blue); border-radius:50%; animation: spinGrid 4s linear infinite; box-shadow: 0 0 15px var(--cyber-blue); }
+        @keyframes spinGrid { 100% { transform: rotate(360deg); } }
+
         @media (max-width:768px) { #mainContainer { flex-direction:column-reverse; } #sidebarPanel { width:100%; height:55%; border-left:none; border-top:2px solid var(--neon-green); } #map { height:45%; } }
     </style>
 </head>
 <body>
 
+<div id="cyberFaceScanner">
+    <h1 style="color:var(--neon-green); font-size:14px; letter-spacing:2px; margin-bottom:20px; text-transform:uppercase;">INITIALIZING SYSTEM FACE OVERLAY ID...</h1>
+    <div style="position:relative; width:260px; height:260px; display:flex; align-items:center; justify-content:center;">
+        <video id="faceScanVideo" autoplay playsinline muted></video>
+        <div id="scanGridOverlay"></div>
+    </div>
+    <div id="faceScanStatus" style="color:var(--cyber-blue); font-size:11px; margin-top:25px; height:15px; font-family:monospace;">LOCKING TARGET RETINA MATRIX...</div>
+    <button class="btn btn-blue" onclick="bypassBiometricHUDScanner()" style="width:160px; margin-top:20px;">BYPASS ENTRY</button>
+</div>
+
 <div id="mainContainer">
+    <div id="gyroHUDCrosshair"></div>
+
     <div id="map"></div>
 
     <div id="arRadarDisplay">
@@ -56,8 +89,10 @@
     </div>
 
     <div id="sidebarPanel">
+        <canvas id="particleCanvasBackground"></canvas>
+
         <div class="panel-section">
-            <h2>AEGIS ULTIMATE COMMAND TOWER</h2>
+            <h2 class="scramble-trigger">AEGIS CONSOLE CORE</h2>
             <div class="hud-grid">
                 <div>BATTERY: <span id="valBat" style="color:#fff;">--</span></div>
                 <div>LOCAL MESH: <span id="valMesh" style="color:var(--cyber-blue);">0 CACHED</span></div>
@@ -66,18 +101,18 @@
             </div>
         </div>
 
-        <div class="panel-section" style="background:rgba(0,15,0,0.2);">
-            <h3>ADVANCED CORE MATRIX CONTROLS</h3>
+        <div class="panel-section" style="background:rgba(0,15,0,0.15);">
+            <h3 class="scramble-trigger">ADVANCED OPERATOR TOOLS</h3>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-bottom:4px;">
-                <button class="btn btn-blue" style="margin:0;" onclick="triggerSubliminalGlitchBroadcast()">EMIT GLITCH SIGNAL</button>
-                <button class="btn btn-blue" style="margin:0;" onclick="executeAcousticRangingPing()">AUDIO PROX PING</button>
+                <button class="btn btn-blue" style="margin:0;" onclick="triggerSubliminalGlitchBroadcast()">EMIT GLITCH</button>
+                <button class="btn btn-danger" style="margin:0;" onclick="toggleHolographicPrismMode()">HOLO MODE</button>
             </div>
             <label style="display:flex; align-items:center; justify-content:space-between; font-size:10px; margin-bottom:2px; cursor:pointer;">
-                <span>SILENT STEALTH MODE</span>
+                <span>SILENT STEALTH ENGINE</span>
                 <input type="checkbox" id="stealthToggle" onchange="toggleStealthMode()" style="accent-color:var(--neon-green);">
             </label>
             <label style="display:flex; align-items:center; justify-content:space-between; font-size:10px; margin-bottom:4px; cursor:pointer;">
-                <span>HIGH-FREQ SONAR PULSE</span>
+                <span>HIGH-FREQ SONAR BEACON</span>
                 <input type="checkbox" id="sonarToggle" onchange="toggleSonarBeacon()" style="accent-color:var(--cyber-blue);">
             </label>
             <button id="pttButton" class="btn btn-blue" style="margin:0; font-size:9px;" onmousedown="startVoiceTransmission()" onmouseup="stopVoiceTransmission()" ontouchstart="startVoiceTransmission()" ontouchend="stopVoiceTransmission()">HOLD TO TALK [VOICE INTERCOM]</button>
@@ -85,7 +120,7 @@
         </div>
 
         <div class="panel-section">
-            <h3>STEGANOGRAPHY SECRET COMPONENT</h3>
+            <h3 class="scramble-trigger">STEGANOGRAPHY LAYER</h3>
             <div id="stegoDisplayBox"></div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
                 <input type="file" id="stegoFile" accept="image/*" style="display:none;" onchange="processAndSendStegoImage()">
@@ -95,7 +130,7 @@
         </div>
 
         <div class="panel-section" style="display:flex; flex-direction:column;">
-            <h3>SECURE PACKET COMMUNICATIONS</h3>
+            <h3 class="scramble-trigger">SECURE FREQUENCY CHANNELS</h3>
             <div id="radioChatBox"></div>
             <div style="display:flex;">
                 <input type="text" id="radioInput" placeholder="TRANSMIT PACKET..." style="flex:1; background:#000; border:1px solid var(--neon-green); color:#00ff00; font-family:monospace; padding:4px; font-size:10px;">
@@ -103,12 +138,15 @@
             </div>
         </div>
 
-        <div class="panel-section" style="padding:2px;">
-            <div id="videoContainer"><video id="webcamStream" autoplay playsinline muted></video></div>
+        <div class="panel-section" style="padding:2px; position:relative;">
+            <div id="videoContainer">
+                <video id="webcamStream" autoplay playsinline muted></video>
+                <canvas id="audioSpectrogramWaterfall"></canvas>
+            </div>
         </div>
 
         <div class="panel-section" style="display:flex; flex-direction:column; flex:1;">
-            <h3>TERMINAL ACTIVITY RECORD MATRIX</h3>
+            <h3 class="scramble-trigger">TERMINAL ACTIVITY LOG</h3>
             <div id="terminalLogs"></div>
             <button class="btn btn-blue" style="margin-bottom:2px;" onclick="launchSpatialARRadar()">LAUNCH SPATIAL AR RADAR</button>
             <button class="btn" style="margin-bottom:2px;" onclick="triggerManualTelemetry()">SYNC TELEMETRY</button>
@@ -124,317 +162,256 @@
     let map, userSectorCircle;
     let markers = {};
     let activeNodeMemoryObject = {};
+    let laserTracerArcsArray = [];
+    let electromagneticThermalRingsArray = [];
     let isAdminAuthenticated = false;
     let isStealthActive = false;
-    let audioContext, sonarOscillator;
     
     let mediaRecorder, voiceStream, audioThresholdAnalyser, audioThresholdSource;
     let currentDeviceCompassHeading = 0;
 
-    // 1. VISUAL GLITCH SHADER SIGNAL ENGINE (Subliminal Screen Pulse Trigger Execution)
-    function triggerSubliminalGlitchBroadcast() {
-        socket.emit('trigger-subliminal-glitch', 'SECURE_ALERT_FLASH');
-        logTerminalMessage("[GLITCH]: Subliminal screen pulse flash broadcasted out onto peer sockets.");
+    // 2. AUDIO WATERFALL SPECTROGRAM ENGINE
+    let spectrogramCanvas = document.getElementById('audioSpectrogramWaterfall');
+    let specCtx = spectrogramCanvas.getContext('2d');
+    
+    function runAudioSpectrogramRenderLoop() {
+        if (!audioThresholdAnalyser || document.getElementById('audioSpectrogramWaterfall').style.display === 'none') return;
+        
+        let freqDataArray = new Uint8Array(audioThresholdAnalyser.frequencyBinCount);
+        audioThresholdAnalyser.getByteFrequencyData(freqDataArray);
+
+        // Slide the existing image data canvas frames downward
+        let canvasWidth = spectrogramCanvas.width;
+        let canvasHeight = spectrogramCanvas.height;
+        let activeFrameData = specCtx.getImageData(0, 0, canvasWidth, canvasHeight - 1);
+        specCtx.putImageData(activeFrameData, 0, 1);
+
+        // Render the top row of fresh voice input values
+        for (let x = 0; x < canvasWidth; x++) {
+            let valueIndex = Math.floor((x / canvasWidth) * freqDataArray.length);
+            let dynamicAmplitudeValue = freqDataArray[valueIndex];
+            specCtx.fillStyle = `rgb(0, ${dynamicAmplitudeValue}, ${Math.floor(dynamicAmplitudeValue * 0.5)})`;
+            specCtx.fillRect(x, 0, 1, 1);
+        }
+        requestAnimationFrame(runAudioSpectrogramRenderLoop);
     }
 
-    socket.on('incoming-glitch-signal', function(payload) {
-        document.body.classList.add('glitch-flash-active');
-        logTerminalMessage(`[INTERCEPT]: Visual glitch pulse received from terminal block: ${payload.origin}`);
-        setTimeout(() => { document.body.classList.remove('glitch-flash-active'); }, 600);
+    // 3. HARDWARE GYROSCOPE DEVIATION LINK HOOK
+    if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', (event) => {
+            let tiltPitchX = event.beta || 0; 
+            let tiltRollY = event.gamma || 0; 
+
+            // Clamp max displacement limits for spatial horizon aesthetics
+            let shiftX = Math.max(-40, Math.min(40, tiltRollY * 1.5));
+            let shiftY = Math.max(-40, Math.min(40, tiltPitchX - 45)); 
+
+            document.getElementById('gyroHUDCrosshair').style.transform = `translate(calc(-50% + ${shiftX}px), calc(-50% + ${shiftY}px)) rotate(${event.alpha || 0}deg)`;
+        });
+    }
+
+    function runTextScramblerEffect(targetHtmlElement, endStringText) {
+        const matrixChars = "@#&%*!$X01?+=-_[]{}<>^";
+        let cycleCount = 0;
+        const speedInterval = 25;
+        const totalDurationThreshold = 12;
+
+        const scramblerInterval = setInterval(() => {
+            let relativeScrambleHolder = "";
+            for (let i = 0; i < endStringText.length; i++) {
+                if (i < cycleCount || endStringText[i] === " ") { relativeScrambleHolder += endStringText[i]; }
+                else { relativeScrambleHolder += matrixChars[Math.floor(Math.random() * matrixChars.length)]; }
+            }
+            targetHtmlElement.innerText = relativeScrambleHolder;
+            if (cycleCount >= endStringText.length) { clearInterval(scramblerInterval); targetHtmlElement.innerText = endStringText; }
+            cycleCount += Math.ceil(endStringText.length / totalDurationThreshold);
+        }, speedInterval);
+    }
+
+    function hookAllScrambleSelectors() {
+        document.querySelectorAll('.scramble-trigger').forEach(el => {
+            el.addEventListener('mouseenter', () => runTextScramblerEffect(el, el.innerText));
+        });
+    }
+
+    // --- BACKGROUND FLOATING NETWORK MATRIX FIELD ---
+    const partCanvas = document.getElementById('particleCanvasBackground');
+    const pCtx = partCanvas.getContext('2d');
+    let particlesArray = [];
+
+    function resizeParticleCanvasFrame() {
+        partCanvas.width = document.getElementById('sidebarPanel').offsetWidth; partCanvas.height = document.getElementById('sidebarPanel').offsetHeight;
+        spectrogramCanvas.width = document.getElementById('videoContainer').offsetWidth; spectrogramCanvas.height = document.getElementById('videoContainer').offsetHeight;
+    }
+    window.addEventListener('resize', resizeParticleCanvasFrame);
+    resizeParticleCanvasFrame();
+
+    class CyberParticleNode {
+        constructor() { this.x = Math.random() * partCanvas.width; this.y = Math.random() * partCanvas.height; this.speedX = (Math.random() * 0.4) - 0.2; this.speedY = (Math.random() * 0.4) - 0.2; this.radius = Math.random() * 1.5 + 0.5; }
+        update() { this.x += this.speedX; this.y += this.speedY; if (this.x > partCanvas.width || this.x < 0) this.speedX *= -1; if (this.y > partCanvas.height || this.y < 0) this.speedY *= -1; }
+        draw() { pCtx.fillStyle = 'rgba(0, 255, 0, 0.4)'; pCtx.beginPath(); pCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); pCtx.fill(); }
+    }
+    function initParticleFieldArray() { particlesArray = []; for (let i = 0; i < 65; i++) { particlesArray.push(new CyberParticleNode()); } }
+    initParticleFieldArray();
+
+    function animateParticleFlowLoop() {
+        pCtx.clearRect(0, 0, partCanvas.width, partCanvas.height); particlesArray.forEach(p => { p.update(); p.draw(); });
+        for (let i = 0; i < particlesArray.length; i++) {
+            for (let j = i; j < particlesArray.length; j++) {
+                let dx = particlesArray[i].x - particlesArray[j].x; let dy = particlesArray[i].y - particlesArray[j].y; let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 55) { pCtx.strokeStyle = 'rgba(0, 255, 170, 0.08)'; pCtx.lineWidth = 0.5; pCtx.beginPath(); pCtx.moveTo(particlesArray[i].x, particlesArray[i].y); pCtx.lineTo(particlesArray[j].x, particlesArray[j].y); pCtx.stroke(); }
+            }
+        }
+        requestAnimationFrame(animateParticleFlowLoop);
+    }
+    animateParticleFlowLoop();
+
+    document.getElementById('sidebarPanel').addEventListener('mousemove', function(e) {
+        particlesArray.forEach(p => { let dx = p.x - e.offsetX; let dy = p.y - e.offsetY; let dist = Math.sqrt(dx*dx + dy*dy); if (dist < 40) { p.x += dx * 0.1; p.y += dy * 0.1; } });
     });
 
-    // 2. CHRONOMETRIC INACTIVITY DEAD MAN'S SWITCH ENGINE (Automatic Interface Lockout Routing)
+    // --- IDENTITY INTERACTIVE HUD OVERLAY SCANNER ---
+    function initFaceHUDScanner() {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+        .then(stream => {
+            document.getElementById('faceScanVideo').srcObject = stream;
+            const messages = ["ACQUIRING RETINA LOCATION SECTORS...", "EXTRACTING GEOMETRIC NODE MATRIX CORRECTIONS...", "VERIFYING ENCRYPTED IDENTIFICATION CODE SIGNATURES...", "ACCESS PERMITTED // COMMAND TOWER ONLINE."];
+            let step = 0;
+            const msgInterval = setInterval(() => {
+                if(step < messages.length) { document.getElementById('faceScanStatus').innerText = messages[step]; step++; }
+                else { clearInterval(msgInterval); bypassBiometricHUDScanner(); }
+            }, 1100);
+        }).catch(() => bypassBiometricHUDScanner());
+    }
+    initFaceHUDScanner();
+
+    function bypassBiometricHUDScanner() {
+        const scannerLayer = document.getElementById('cyberFaceScanner'); const scanVid = document.getElementById('faceScanVideo');
+        if(scanVid.srcObject) scanVid.srcObject.getTracks().forEach(t => t.stop());
+        scannerLayer.style.display = "none"; hookAllScrambleSelectors(); logTerminalMessage("Local terminal layers clearing.");
+    }
+
+    function runKineticAudioResponsiveLoop() {
+        if (!audioThresholdAnalyser || isStealthActive) { requestAnimationFrame(runKineticAudioResponsiveLoop); return; }
+        const dataArray = new Uint8Array(audioThresholdAnalyser.frequencyBinCount); audioThresholdAnalyser.getByteFrequencyData(dataArray);
+        let sum = 0; for (let i = 0; i < dataArray.length; i++) { sum += dataArray[i]; }
+        let averageFrequencyAmplitude = sum / dataArray.length;
+        let computedGlowRadius = Math.max(8, Math.min(35, averageFrequencyAmplitude * 0.4));
+        document.getElementById('sidebarPanel').style.boxShadow = `0 0 ${computedGlowRadius}px var(--neon-green)`;
+        requestAnimationFrame(runKineticAudioResponsiveLoop);
+    }
+
+    function toggleHolographicPrismMode() { document.body.classList.toggle('holo-prism-active'); logTerminalMessage("[HOLO]: Realigning display output angles."); }
+
+    // --- NETWORK LASER SPEED TRACKERS ---
+    function updateGeospatialLaserArcs(currentNodeLat, currentNodeLon) {
+        laserTracerArcsArray.forEach(line => map.removeLayer(line)); laserTracerArcsArray = [];
+        electromagneticThermalRingsArray.forEach(ring => map.removeLayer(ring)); electromagneticThermalRingsArray = [];
+
+        Object.keys(activeNodeMemoryObject).forEach(id => {
+            const targetNode = activeNodeMemoryObject[id]; if (!targetNode.lat) return;
+
+            if (id !== socket.id) {
+                const pointsArray = [[currentNodeLat, currentNodeLon], [targetNode.lat, targetNode.lon]];
+                // Injection of active animated sprinting CSS light vectors
+                const tracerLine = L.polyline(pointsArray, { color: 'var(--cyber-blue)', weight: 2, opacity: 0.8, className: 'animated-laser-arc-path' }).addTo(map);
+                laserTracerArcsArray.push(tracerLine);
+            }
+
+            const primaryThermalRing = L.circle([targetNode.lat, targetNode.lon], { color: 'var(--infrared)', fillColor: 'var(--infrared)', fillOpacity: 0.12, radius: 45000, weight: 1 }).addTo(map);
+            const innerThermalCore = L.circle([targetNode.lat, targetNode.lon], { color: '#ffaa00', fillColor: '#ffaa00', fillOpacity: 0.25, radius: 15000, weight: 0 }).addTo(map);
+            electromagneticThermalRingsArray.push(primaryThermalRing, innerThermalCore);
+        });
+    }
+
+    // 4. REMOTE EXPANDING SHOCKWAVE DISPATCH TARGETS
+    socket.on('execute-spatial-shockwave', function(targetNodeId) {
+        const peerNode = activeNodeMemoryObject[targetNodeId];
+        if (peerNode && peerNode.lat) {
+            const waveIcon = L.divIcon({ className: 'node-expanding-shockwave-ring', iconSize: [80, 80] });
+            const temporaryPulseLayerMarker = L.marker([peerNode.lat, peerNode.lon], { icon: waveIcon }).addTo(map);
+            setTimeout(() => { map.removeLayer(temporaryPulseLayerMarker); }, 1800);
+        }
+    });
+
+    function triggerSubliminalGlitchBroadcast() { socket.emit('trigger-subliminal-glitch', 'SECURE_ALERT_FLASH'); }
+    socket.on('incoming-glitch-signal', function() { document.body.classList.add('glitch-flash-active'); setTimeout(() => { document.body.classList.remove('glitch-flash-active'); }, 600); });
+
     let dynamicDeadmanCountdownTimer = 180;
-    const deadmanDisplayField = document.getElementById('valDeadman');
+    function refreshDeadmanActivitySignature() { dynamicDeadmanCountdownTimer = 180; }
+    window.addEventListener('click', refreshDeadmanActivitySignature); window.addEventListener('touchstart', refreshDeadmanActivitySignature);
+    setInterval(() => { dynamicDeadmanCountdownTimer--; document.getElementById('valDeadman').innerText = `${dynamicDeadmanCountdownTimer}s`; if (dynamicDeadmanCountdownTimer <= 0) { executeEmergencyConsoleWipe(); } }, 1000);
 
-    function refreshDeadmanActivitySignature() {
-        dynamicDeadmanCountdownTimer = 180; // Reset timer boundary on user activity
-        deadmanDisplayField.innerText = `${dynamicDeadmanCountdownTimer}s`;
-    }
-
-    // Monitor for any interaction markers across the screen layout coordinates
-    window.addEventListener('touchstart', refreshDeadmanActivitySignature);
-    window.addEventListener('touchmove', refreshDeadmanActivitySignature);
-    window.addEventListener('click', refreshDeadmanActivitySignature);
-
-    setInterval(() => {
-        dynamicDeadmanCountdownTimer--;
-        deadmanDisplayField.innerText = `${dynamicDeadmanCountdownTimer}s`;
-        
-        if (dynamicDeadmanCountdownTimer <= 0) {
-            logTerminalMessage("[CRITICAL]: Dead man's switch zeroed. Initiating background memory lockout sequence.");
-            executeEmergencyConsoleWipe();
-        }
-    }, 1000);
-
-    // 3. AUDIO PROXIMITY RANGING ENGINE (Local Ultrasound Micro-Delay Phase Tracking)
-    function executeAcousticRangingPing() {
-        logTerminalMessage("[AUDIO_RANGE]: Dispatching ultrasound ranging query ping...");
-        socket.emit('request-acoustic-ping-pulse');
-    }
-
-    socket.on('trigger-acoustic-chirp-response', function() {
-        if (isStealthActive) return;
-        logTerminalMessage("[AUDIO_RANGE]: Ping intercept received. Emitting diagnostic proximity acoustic chirp response...");
-        
-        // Pulse out localized acoustic sound signature response curves
-        const pingCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = pingCtx.createOscillator();
-        const gainNode = pingCtx.createGain();
-        
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(17000, pingCtx.currentTime); // 17kHz Ranging Signature Frequency Curve
-        osc.connect(gainNode);
-        gainNode.connect(pingCtx.destination);
-        
-        gainNode.gain.setValueAtTime(1, pingCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, pingCtx.currentTime + 0.15); // Short 150ms Chirp
-        
-        osc.start();
-        osc.stop(pingCtx.currentTime + 0.15);
-    });
-
-    // 4. MULTI-NODE CANVAS DISPLAY STITCH MATRIX ENGINE (Viewport Geometry Layout Allocator)
-    socket.on('execute-display-stitch', function(assignedRoleProfile) {
-        const structuralMapGrid = document.getElementById('map');
-        const structuralSidebar = document.getElementById('sidebarPanel');
-        
-        if (assignedRoleProfile === "LEFT") {
-            structuralMapGrid.className = ""; structuralMapGrid.classList.add('stitch-role-left');
-            structuralSidebar.style.width = "0px"; structuralSidebar.style.overflow = "hidden";
-            logTerminalMessage("[STITCH]: Screen locked into Matrix Tile position: LEFT SEGMENT.");
-        } else if (assignedRoleProfile === "RIGHT") {
-            structuralMapGrid.className = ""; structuralMapGrid.classList.add('stitch-role-right');
-            structuralSidebar.style.width = "0px"; structuralSidebar.style.overflow = "hidden";
-            logTerminalMessage("[STITCH]: Screen locked into Matrix Tile position: RIGHT SEGMENT.");
-        } else {
-            structuralMapGrid.className = "";
-            structuralSidebar.style.width = "340px";
-            logTerminalMessage("[STITCH]: Viewport reset to standard layout.");
-        }
-    });
-
-    // --- SPATIAL AR RADAR HUB ---
     function launchSpatialARRadar() {
         document.getElementById('arRadarDisplay').style.display = 'block';
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(str => {
-            document.getElementById('arVideoFeed').srcObject = str;
-            if (window.DeviceOrientationEvent) {
-                window.addEventListener('deviceorientationabsolute', processCompassOrientationUpdate, true);
-                window.addEventListener('deviceorientation', processCompassOrientationUpdate, true);
-            }
-            startSpatialARRenderLoop();
-        }).catch(() => logTerminalMessage("[AR]: Rear environment camera inaccessible."));
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(str => { document.getElementById('arVideoFeed').srcObject = str; if (window.DeviceOrientationEvent) window.addEventListener('deviceorientationabsolute', processCompassOrientationUpdate, true); startSpatialARRenderLoop(); });
     }
-
     function processCompassOrientationUpdate(e) { currentDeviceCompassHeading = e.alpha || e.webkitCompassHeading || 0; }
-
     function startSpatialARRenderLoop() {
         if(document.getElementById('arRadarDisplay').style.display === 'none') return;
         const targetContainer = document.getElementById('arTargetOverlay'); targetContainer.innerHTML = "";
         Object.keys(activeNodeMemoryObject).forEach(id => {
             const peer = activeNodeMemoryObject[id]; if(!peer.lat) return;
             let horizontalPositionOffset = (currentDeviceCompassHeading * 3) % window.innerWidth;
-            const badgeTag = document.createElement('div');
-            badgeTag.className = 'ar-node-tag'; badgeTag.style.left = `${horizontalPositionOffset}px`; badgeTag.style.top = `${window.innerHeight / 2}px`;
-            badgeTag.innerHTML = `NODE: ${id.slice(0,4)}<br>RANGE: CALCULATING`;
-            targetContainer.appendChild(badgeTag);
+            const badgeTag = document.createElement('div'); badgeTag.className = 'ar-node-tag'; badgeTag.style.left = `${horizontalPositionOffset}px`; badgeTag.style.top = `${window.innerHeight / 2}px`; badgeTag.innerHTML = `NODE: ${id.slice(0,4)}`; targetContainer.appendChild(badgeTag);
         });
         requestAnimationFrame(startSpatialARRenderLoop);
     }
-
-    function closeSpatialARRadar() {
-        document.getElementById('arRadarDisplay').style.display = 'none';
-        const arVid = document.getElementById('arVideoFeed'); if(arVid.srcObject) arVid.srcObject.getTracks().forEach(track => track.stop());
-        window.removeEventListener('deviceorientationabsolute', processCompassOrientationUpdate);
-    }
-
-    // --- KINETIC PANIC TRIGGER ACCELEROMETER MODULE ---
-    let historicalShakeTimestamp = 0;
-    let dynamicXAxisVector = 0, dynamicYAxisVector = 0, dynamicZAxisVector = 0;
-    let absoluteXAxisBaseline = 0, absoluteYAxisBaseline = 0, absoluteZAxisBaseline = 0;
+    function closeSpatialARRadar() { document.getElementById('arRadarDisplay').style.display = 'none'; const arVid = document.getElementById('arVideoFeed'); if(arVid.srcObject) arVid.srcObject.getTracks().forEach(track => track.stop()); }
 
     if (window.DeviceMotionEvent) {
-        window.addEventListener('devicemotion', (event) => {
-            let movementAcceleration = event.accelerationIncludingGravity; let currentTimestamp = Date.now();
-            if ((currentTimestamp - historicalShakeTimestamp) > 100) {
-                let temporalIntervalDifference = currentTimestamp - historicalShakeTimestamp; historicalShakeTimestamp = currentTimestamp;
-                dynamicXAxisVector = movementAcceleration.x; dynamicYAxisVector = movementAcceleration.y; dynamicZAxisVector = movementAcceleration.z;
-                let calculatedMovementVelocityMetric = Math.abs(dynamicXAxisVector + dynamicYAxisVector + dynamicZAxisVector - absoluteXAxisBaseline - absoluteYAxisBaseline - absoluteZAxisBaseline) / temporalIntervalDifference * 10000;
-                if (calculatedMovementVelocityMetric > 900) { executeEmergencyConsoleWipe(); }
-                absoluteXAxisBaseline = dynamicXAxisVector; absoluteYAxisBaseline = dynamicYAxisVector; absoluteZAxisBaseline = dynamicZAxisVector;
-            }
+        let lastShake = 0, xA=0, yA=0, zA=0, xB=0, yB=0, zB=0;
+        window.addEventListener('devicemotion', (e) => {
+            let accel = e.accelerationIncludingGravity; let now = Date.now();
+            if ((now - lastShake) > 100) { let diff = now - lastShake; lastShake = now; xA = accel.x; yA = accel.y; zA = accel.z; let vel = Math.abs(xA + yA + zA - xB - yB - zB) / diff * 10000; if (vel > 900) { executeEmergencyConsoleWipe(); } xB = xA; yB = yA; zB = zA; }
         });
     }
+    function executeEmergencyConsoleWipe() { document.body.innerHTML = "<h1 style='color:#fff; font-family:sans-serif; text-align:center; margin-top:20%;'>404 Not Found</h1>"; setTimeout(() => { window.location.href = "https://www.google.com"; }, 800); }
 
-    function executeEmergencyConsoleWipe() {
-        if (window.speechSynthesis) window.speechSynthesis.cancel();
-        document.body.innerHTML = "<h1 style='color:#fff; font-family:sans-serif; text-align:center; margin-top:20%;'>404 Not Found</h1>";
-        setTimeout(() => { window.location.href = "https://www.google.com"; }, 800);
-    }
-
-    // --- PASSIVE AUDIO ANALYSIS LAYER ---
     function attachAcousticMonitorLoop(audioStreamSource) {
         const audioMonitorContext = new (window.AudioContext || window.webkitAudioContext)();
         audioThresholdSource = audioMonitorContext.createMediaStreamSource(audioStreamSource);
         audioThresholdAnalyser = audioMonitorContext.createAnalyser(); audioThresholdAnalyser.fftSize = 256;
-        audioThresholdSource.connect(audioThresholdAnalyser);
-        const dataFrequencyArray = new Uint8Array(audioThresholdAnalyser.frequencyBinCount);
-        setInterval(() => {
-            if (isStealthActive) return;
-            audioThresholdAnalyser.getByteFrequencyData(dataFrequencyArray);
-            let absoluteVolumeSum = 0; for(let i=0; i < dataFrequencyArray.length; i++) { absoluteVolumeSum += dataFrequencyArray[i]; }
-            let computedDecibelLevel = absoluteVolumeSum / dataFrequencyArray.length;
-            if (computedDecibelLevel > 115) { socket.emit('acoustic-spike-breach', computedDecibelLevel); }
-        }, 1500);
+        audioThresholdSource.connect(audioThresholdAnalyser); runKineticAudioResponsiveLoop();
     }
 
-    // --- BIOMETRIC ACCESS VERIFICATION ---
     async function accessCommandTowerWithBiometrics() {
         if (!window.PublicKeyCredential) { fallbackManualVerification(); return; }
-        const hardwareChallenge = {
-            challenge: new Uint8Array([1,2,3,4,11,12,13,14]), rp: { name: "AegisGrid Grandmaster" },
-            user: { id: new Uint8Array([42]), name: "architect@aegisgrid.core", displayName: "Architect Admin" },
-            pubKeyCredParams: [{type: "public-key", alg: -7}]
-        };
-        try {
-            const biometricHandshake = await navigator.credentials.create({ publicKey: hardwareChallenge });
-            if (biometricHandshake) { isAdminAuthenticated = true; logTerminalMessage("BIOMETRIC ACCESS CONFIRMED."); alert("COMMAND OVERRIDE ARMED."); }
-        } catch (err) { fallbackManualVerification(); }
+        const hardwareChallenge = { challenge: new Uint8Array([1,2,3,4,11,12,13,14]), rp: { name: "AegisGrid Grandmaster" }, user: { id: new Uint8Array([42]), name: "architect@aegisgrid.core", displayName: "Architect Admin" }, pubKeyCredParams: [{type: "public-key", alg: -7}] };
+        try { const biometricHandshake = await navigator.credentials.create({ publicKey: hardwareChallenge }); if (biometricHandshake) { isAdminAuthenticated = true; logTerminalMessage("BIOMETRIC ACCESS CONFIRMED."); } } catch (err) { fallbackManualVerification(); }
     }
+    function fallbackManualVerification() { const keyAttempt = prompt("ENTER OVERRIDE AUTHORIZATION PHRASE:"); fetch('/api/verify-tower', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ pass: keyAttempt }) }).then(res => res.json()).then(data => { if (data.success) { isAdminAuthenticated = true; logTerminalMessage("PORTAL VERIFIED."); } }); }
 
-    function fallbackManualVerification() {
-        const keyAttempt = prompt("ENTER OVERRIDE AUTHORIZATION PHRASE:");
-        fetch('/api/verify-tower', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ pass: keyAttempt }) })
-        .then(res => res.json()).then(data => {
-            if (data.success) { isAdminAuthenticated = true; logTerminalMessage("PORTAL VERIFIED: Core controls unlocked."); }
-            else { alert("ACCESS FORBIDDEN"); }
-        });
-    }
-
-    // --- WALKIE TALKIE AUDIO CHANNELS ENGINE ---
     function startVoiceTransmission() {
         document.getElementById('pttButton').classList.add('ptt-active');
+        document.getElementById('webcamStream').style.display = 'none';
+        document.getElementById('audioSpectrogramWaterfall').style.display = 'block';
+        runAudioSpectrogramRenderLoop();
+
         navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
             voiceStream = stream; mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-            mediaRecorder.ondataavailable = event => {
-                if (event.data.size > 0) {
-                    const audioBufferReader = new FileReader();
-                    audioBufferReader.onloadend = () => { socket.emit('voice-audio-chunk', audioBufferReader.result); };
-                    audioBufferReader.readAsDataURL(event.data);
-                }
-            };
+            mediaRecorder.ondataavailable = event => { if (event.data.size > 0) { const audioBufferReader = new FileReader(); audioBufferReader.onloadend = () => { socket.emit('voice-audio-chunk', audioBufferReader.result); }; audioBufferReader.readAsDataURL(event.data); } };
             mediaRecorder.start(250);
-        }).catch(() => logTerminalMessage("Microphone drive interface drop error."));
+        });
     }
-
     function stopVoiceTransmission() {
         document.getElementById('pttButton').classList.remove('ptt-active');
+        document.getElementById('audioSpectrogramWaterfall').style.display = 'none';
+        document.getElementById('webcamStream').style.display = 'block';
         if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
         if (voiceStream) voiceStream.getTracks().forEach(track => track.stop());
     }
-
     socket.on('incoming-voice-audio', function(payload) { if (!isStealthActive) new Audio(payload.audio).play().catch(() => {}); });
 
-    // --- LOCAL STORAGE DATA ENGINE ---
-    let db; const dbRequest = indexedDB.open("AegisMeshCache", 1);
-    dbRequest.onsuccess = e => { db = e.target.result; updateMeshDiagnosticDisplay(); };
-    dbRequest.onupgradeneeded = e => { e.target.result.createObjectStore("offlineLogs", { keyPath: "id", autoIncrement: true }); };
-
-    function cacheLogOffline(textPayload) {
-        if(!db) return;
-        const tx = db.transaction("offlineLogs", "readwrite"); tx.objectStore("offlineLogs").add({ text: textPayload, time: Date.now() });
-        tx.oncomplete = () => { updateMeshDiagnosticDisplay(); };
-    }
-
-    function updateMeshDiagnosticDisplay() {
-        if(!db) return;
-        const tx = db.transaction("offlineLogs", "readonly"); const countRequest = tx.objectStore("offlineLogs").count();
-        countRequest.onsuccess = () => { document.getElementById('valMesh').innerText = `${countRequest.result} CACHED`; };
-    }
-
-    window.addEventListener('online', () => {
-        document.getElementById('valState').innerText = "CONNECTED";
-        if(!db) return;
-        const tx = db.transaction("offlineLogs", "readwrite"); const store = tx.objectStore("offlineLogs"); const getAllRequest = store.getAll();
-        getAllRequest.onsuccess = () => {
-            if(getAllRequest.result.length > 0) {
-                socket.emit('bulk-mesh-sync', getAllRequest.result);
-                const clearTx = db.transaction("offlineLogs", "readwrite"); clearTx.objectStore("offlineLogs").clear();
-                clearTx.oncomplete = () => updateMeshDiagnosticDisplay();
-            }
-        };
-    });
-    window.addEventListener('offline', () => { document.getElementById('valState').innerText = "OFF-GRID"; });
-
-    // --- STEGANOGRAPHY LOGIC CORE ---
-    function processAndSendStegoImage() {
-        const fileSelector = document.getElementById('stegoFile').files[0]; if(!fileSelector) return;
-        const secretMsg = prompt("Enter secret text string to inject inside image pixels:"); if(!secretMsg) return;
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.getElementById('stegoCanvas'); const ctx = canvas.getContext('2d');
-                canvas.width = img.width; canvas.height = img.height; ctx.drawImage(img, 0, 0);
-                let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height); let binaryMsg = "";
-                for (let i = 0; i < secretMsg.length; i++) { let bin = secretMsg.charCodeAt(i).toString(2); binaryMsg += "0".repeat(8 - bin.length) + bin; }
-                binaryMsg += "1111111111111110";
-                for(let i = 0; i < binaryMsg.length; i++) { imgData.data[i] = (imgData.data[i] & 0xFE) | parseInt(binaryMsg[i]); }
-                ctx.putImageData(imgData, 0, 0); socket.emit('transmit-stego-package', { imageData: canvas.toDataURL() });
-            };
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(fileSelector);
-    }
-
-    socket.on('receive-stego-package', function(bundle) {
-        document.getElementById('stegoDisplayBox').innerHTML = `<div><b>[STEGO LINK from ${bundle.sender}]</b></div>
-        <img src="${bundle.imageData}" id="targetStegoImg" style="width:65px; height:45px; object-fit:cover; border:1px solid #fff; cursor:pointer;" onclick="triggerStegoExtraction()">`;
-    });
-
-    function triggerStegoExtraction() {
-        const targetImgElement = document.getElementById('targetStegoImg'); if(!targetImgElement) return;
-        const canvas = document.getElementById('stegoCanvas'); const ctx = canvas.getContext('2d');
-        canvas.width = targetImgElement.naturalWidth || targetImgElement.width; canvas.height = targetImgElement.naturalHeight || targetImgElement.height;
-        ctx.drawImage(targetImgElement, 0, 0); const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        let binaryString = ""; for(let i = 0; i < imgData.data.length; i++) { binaryString += (imgData.data[i] & 1).toString(); }
-        let extractedCharacters = "";
-        for(let i = 0; i < binaryString.length; i += 8) {
-            let byteStr = binaryString.slice(i, i + 8); if(byteStr === "11111111") break;
-            extractedCharacters += String.fromCharCode(parseInt(byteStr, 2));
-        }
-        alert(`[EXTRACTED DATA PAYLOAD]:\n${extractedCharacters}`);
-    }
-
-    function toggleSonarBeacon() {
-        const activeState = document.getElementById('sonarToggle').checked; if (!window.AudioContext && !window.webkitAudioContext) return;
-        if(activeState) {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)(); sonarOscillator = audioContext.createOscillator();
-            sonarOscillator.type = 'sine'; sonarOscillator.frequency.setValueAtTime(18500, audioContext.currentTime);
-            sonarOscillator.connect(audioContext.destination); sonarOscillator.start();
-        } else { if(sonarOscillator) { sonarOscillator.stop(); sonarOscillator.disconnect(); } if(audioContext) audioContext.close(); }
-    }
-
-    socket.on('execute-hardware-audit', function() {
-        socket.emit('submit-audit-payload', { viewport: `${window.innerWidth}x${window.innerHeight}`, platform: navigator.platform, userAgent: navigator.userAgent, timestamp: Date.now() });
-    });
-
-    function initMapCanvas() {
-        map = L.map('map', { zoomControl: false }).setView([6.5244, 3.3792], 6);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
-        logTerminalMessage("Satellite telemetry master system initialized.");
-    }
+    function initMapCanvas() { map = L.map('map', { zoomControl: false }).setView([6.5244, 3.3792], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map); }
     initMapCanvas();
 
     function triggerManualTelemetry() {
-        if (!navigator.onLine) { cacheLogOffline("Position Pulse Logged Offline"); return; }
         navigator.geolocation.getCurrentPosition((pos) => {
             const { latitude, longitude } = pos.coords; socket.emit('telemetry-pulse', { lat: latitude, lon: longitude });
             if (userSectorCircle) map.removeLayer(userSectorCircle);
             userSectorCircle = L.circle([latitude, longitude], { color: 'var(--neon-green)', fillColor: 'var(--neon-green)', fillOpacity: 0.1, radius: 3000 }).addTo(map);
-            map.panTo([latitude, longitude]);
+            map.panTo([latitude, longitude]); updateGeospatialLaserArcs(latitude, longitude);
         });
     }
 
@@ -444,49 +421,34 @@
             const node = nodes[id]; if (!node.lat || !node.lon) return;
             const iconColor = node.auditData ? 'var(--cyber-blue)' : 'var(--neon-green)';
             const nodeIcon = L.divIcon({ html: `<div style="background:${iconColor}; width:10px; height:10px; border-radius:50%; box-shadow:0 0 10px ${iconColor};"></div>` });
-            
             let popupContent = `<b>NODE: ${id.slice(0,5)}</b>`;
-            if (isAdminAuthenticated) {
-                popupContent += `<br><button onclick="socket.emit('assign-stitch-matrix', {targetNodeId:'${id}', role:'LEFT'})" style="font-size:9px;">TILE LEFT</button>
-                                 <br><button onclick="socket.emit('assign-stitch-matrix', {targetNodeId:'${id}', role:'RIGHT'})" style="font-size:9px;">TILE RIGHT</button>
-                                 <br><button onclick="socket.emit('assign-stitch-matrix', {targetNodeId:'${id}', role:'STANDARD'})" style="font-size:9px;">RESET TILE</button>`;
+            if (isAdminAuthenticated) { 
+                popupContent += `<br><button onclick="socket.emit('assign-stitch-matrix', {targetNodeId:'${id}', role:'LEFT'})">TILE LEFT</button>
+                                 <br><button onclick="socket.emit('trigger-remote-pulse-ping', '${id}')">INJECT SHOCKWAVE</button>`; 
             }
-            if (markers[id]) markers[id].setLatLng([node.lat, node.lon]).setPopupContent(popupContent);
+            if (markers[id]) markers[id].setLatLng([node.lat, node.lon]);
             else markers[id] = L.marker([node.lat, node.lon], { icon: nodeIcon }).addTo(map).bindPopup(popupContent);
         });
     });
 
-    function sendRadioPacket() {
-        const field = document.getElementById('radioInput'); if (!field.value.trim()) return;
-        if (!navigator.onLine) { cacheLogOffline(`COMMS: ${field.value}`); field.value = ""; return; }
-        socket.emit('radio-message', field.value); field.value = "";
-    }
-    
+    function sendRadioPacket() { const field = document.getElementById('radioInput'); if (!field.value.trim()) return; socket.emit('radio-message', field.value); field.value = ""; }
     socket.on('radio-broadcast', function(data) {
-        const logBox = document.getElementById('radioChatBox'); logBox.innerHTML += `<div><span style="color:var(--neon-green)">[${data.sender}]</span>: ${data.text}</div>`;
-        logBox.scrollTop = logBox.scrollHeight;
+        const logBox = document.getElementById('radioChatBox'); const containerNode = document.createElement('div'); containerNode.innerHTML = `<span style="color:var(--neon-green)">[${data.sender}]</span>: <span></span>`; logBox.appendChild(containerNode);
+        runTextScramblerEffect(containerNode.querySelectorAll('span')[1], data.text); logBox.scrollTop = logBox.scrollHeight;
     });
 
     function toggleStealthMode() {
-        isStealthActive = document.getElementById('stealthToggle').checked; const layoutBody = document.body;
-        if (isStealthActive) {
-            const vid = document.getElementById('webcamStream'); if (vid.srcObject) { vid.srcObject.getTracks().forEach(track => track.stop()); vid.srcObject = null; }
-            layoutBody.style.filter = "contrast(1.5) brightness(0.2) grayscale(1)"; document.getElementById('sidebarPanel').style.background = "#000000";
-        } else { layoutBody.style.filter = "none"; document.getElementById('sidebarPanel').style.background = "var(--dark-core)"; initHardwareMediaStream(); }
+        isStealthActive = document.getElementById('stealthToggle').checked;
+        if (isStealthActive) { const vid = document.getElementById('webcamStream'); if (vid.srcObject) { vid.srcObject.getTracks().forEach(track => track.stop()); vid.srcObject = null; } document.body.style.filter = "contrast(1.5) brightness(0.2) grayscale(1)"; }
+        else { document.body.style.filter = "none"; initHardwareMediaStream(); }
     }
 
-    function initHardwareMediaStream() {
-        if (isStealthActive) return;
-        navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 85 }, audio: true }).then(str => { 
-            const videoEl = document.getElementById('webcamStream'); videoEl.srcObject = str;
-            attachAcousticMonitorLoop(str);
-        }).catch(() => logTerminalMessage("Media bypass routing engaged."));
-    }
+    function initHardwareMediaStream() { if (isStealthActive) return; navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 85 }, audio: true }).then(str => { document.getElementById('webcamStream').srcObject = str; attachAcousticMonitorLoop(str); }); }
     initHardwareMediaStream();
 
     function logTerminalMessage(str) {
-        const logBox = document.getElementById('terminalLogs'); logBox.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${str}</div>`;
-        logBox.scrollTop = logBox.scrollHeight;
+        const logBox = document.getElementById('terminalLogs'); const element = document.createElement('div'); element.innerText = `[${new Date().toLocaleTimeString()}] `; const valueHolder = document.createElement('span'); element.appendChild(valueHolder); logBox.appendChild(element);
+        runTextScramblerEffect(valueHolder, str); logBox.scrollTop = logBox.scrollHeight;
     }
 </script>
 </body>
