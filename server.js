@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { 
     cors: { origin: "*" },
-    maxHttpBufferSize: 1e7 // Increase to 10MB to support mobile photo transfers
+    maxHttpBufferSize: 1e7
 });
 
 app.use(express.json());
@@ -15,9 +15,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 let activeNodes = {};
 let activeWaypoints = [];
-const HEARTBEAT_TIMEOUT = 300000; // 5 Minutes
+const HEARTBEAT_TIMEOUT = 300000; 
 
-// Haversine Formula for Proximity Matrix
 function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371e3;
     const phi1 = lat1 * Math.PI / 180;
@@ -30,7 +29,6 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
-// REST Endpoint for Admin Verification
 app.post('/api/verify-tower', (req, res) => {
     const { pass } = req.body;
     if (pass === "TIMMY2026") {
@@ -39,11 +37,8 @@ app.post('/api/verify-tower', (req, res) => {
     res.status(401).json({ success: false, message: "UNAUTHORIZED" });
 });
 
-// Real-Time Socket Pipe Matrix
 io.on('connection', (socket) => {
     console.log(`Node Online: ${socket.id}`);
-    
-    // Create structural hardware metadata tracking profile
     activeNodes[socket.id] = { id: socket.id, lastSeen: Date.now(), lat: null, lon: null, auditData: null };
 
     socket.emit('sync-waypoints', activeWaypoints);
@@ -55,7 +50,6 @@ io.on('connection', (socket) => {
             activeNodes[socket.id].lastSeen = Date.now();
             io.emit('node-update', activeNodes);
             
-            // Loop convergence proximity monitoring checks
             Object.keys(activeNodes).forEach(otherId => {
                 if (otherId !== socket.id && activeNodes[otherId].lat) {
                     const dist = calculateDistance(data.lat, data.lon, activeNodes[otherId].lat, activeNodes[otherId].lon);
@@ -67,32 +61,31 @@ io.on('connection', (socket) => {
         }
     });
 
-    // OFF-GRID RESYNC ENGINE: Processes historical bulk packets sent when a phone regains internet connection
+    // P2P VOICE STREAM ROUTER: Pipes binary voice chunks instantly to all other nodes
+    socket.on('voice-audio-chunk', (audioData) => {
+        socket.broadcast.emit('incoming-voice-audio', { sender: socket.id.slice(0,4), audio: audioData });
+    });
+
     socket.on('bulk-mesh-sync', (historicalPackets) => {
-        console.log(`Processing ${historicalPackets.length} cached data logs from Node ${socket.id.slice(0,5)}`);
         historicalPackets.forEach(packet => {
             io.emit('radio-broadcast', { sender: `${socket.id.slice(0,4)}-MESH`, text: `[OFFGRID_LOG]: ${packet.text}`, timestamp: packet.time });
         });
     });
 
-    // STEGANOGRAPHY ROUTER: Relays base64 canvas data containing hidden message strings across the node array
     socket.on('transmit-stego-package', (payload) => {
-        // payload: { imageBuffer: base64Data }
         io.emit('receive-stego-package', { sender: socket.id.slice(0,5), imageData: payload.imageData });
     });
 
-    // REMOTE AUDIT TAKE-OVER LAYER: Request hardware logs from a target phone device
     socket.on('trigger-remote-audit', (targetNodeId) => {
         if (io.sockets.sockets.get(targetNodeId)) {
             io.to(targetNodeId).emit('execute-hardware-audit');
         }
     });
 
-    // Processes incoming device diagnostic data and pipes it back to the active Admin
     socket.on('submit-audit-payload', (auditData) => {
         if (activeNodes[socket.id]) {
             activeNodes[socket.id].auditData = auditData;
-            io.emit('node-update', activeNodes); // Sync audit logs across to the admin terminal
+            io.emit('node-update', activeNodes);
         }
     });
 
@@ -123,4 +116,4 @@ setInterval(() => {
 }, 30000);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`AegisGrid Advanced Core online on port ${PORT}`));
+server.listen(PORT, () => console.log(`AegisGrid Server running on port ${PORT}`));
