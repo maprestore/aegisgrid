@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AEGISGRID // SECURE COMMAND MASTER CORE v5.0</title>
+    <title>AEGISGRID // SECURE COMMAND MASTER CORE v5.5-BETA</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root { 
@@ -63,8 +63,8 @@
 <body>
 
 <header id="mainHeader">
-    <div class="brand"><h1>AEGISGRID // SECURED HARDENED MESH v5.0</h1></div>
-    <div style="font-size: 0.7rem;">ORCHESTRATOR STATUS: <span id="aiStatus" style="color:var(--cyber-blue)">INITIALIZING HARDENING MODULES...</span></div>
+    <div class="brand"><h1>AEGISGRID // SECURED HARDENED MESH v5.5</h1></div>
+    <div style="font-size: 0.7rem;">ORCHESTRATOR STATUS: <span id="aiStatus" style="color:var(--cyber-blue)">INITIALIZING MODULES...</span></div>
 </header>
 
 <div class="nav-bar">
@@ -74,7 +74,6 @@
 </div>
 
 <main id="main-content">
-    <!-- MAP WORKSPACE PANEL -->
     <section id="dashboard" style="width: 100%;">
         <div class="console">
             <div style="display: flex; gap: 5px; margin-bottom: 2px;">
@@ -86,12 +85,11 @@
         </div>
     </section>
     
-    <!-- COMMAND TOWER CONSOLE -->
     <section id="admin" style="display:none;" class="console">
         <h2 style="color:var(--cyber-blue); font-size: 0.9rem;">COMMAND TOWER MACRO CONSOLE</h2>
         <div class="widget">
-            <h3 style="font-size: 0.55rem; color:var(--cyber-blue); margin-bottom:5px;">CLI CORE COMMAND STRINGS</h3>
-            <input type="text" class="terminal-input" id="cliInput" placeholder="ENTER MACRO EXECUTION..." onkeypress="handleTerminalCliKey(event)">
+            <h3 style="font-size: 0.55rem; color:var(--cyber-blue); margin-bottom:5px;">CLI CHAIN COMPILER (supports multiple commands separated by &amp;&amp;)</h3>
+            <input type="text" class="terminal-input" id="cliInput" placeholder="EXAMPLE: /clear &amp;&amp; /ghost on &amp;&amp; /pingall" onkeypress="handleTerminalCliKey(event)">
         </div>
         <div class="widget">
             <h3 style="font-size: 0.55rem; color:var(--cyber-blue); margin-bottom:4px;">ENVIRONMENT CONTROLS</h3>
@@ -108,15 +106,13 @@
         </div>
     </section>
 
-    <!-- MANUAL SECTOR -->
     <section id="about" style="display:none;" class="console">
         <h2 style="color:var(--cyber-blue); font-size: 0.9rem;">AEGISGRID HIGH-POWER ARTIFACT MANUAL // BY TIMMYDON</h2>
         <p style="font-size: 0.65rem; color: var(--text-digital); margin-top: 5px; line-height: 1.4;">
-            Version 5.0 Hardened Security Release. Dynamic node arrays use robust context encapsulation. XSS mitigations apply strictly across tracking layers and raw text packet sinks. Optimized by TIMMYDON.
+            Version 5.5 Hardened Security Release. Dynamic node arrays use robust context encapsulation. XSS mitigations apply strictly across tracking layers and raw text packet sinks. Complete with Offline Storage queues, Macro chaining, and perimeter breadcrumb telemetry calculations. Optimized by TIMMYDON.
         </p>
     </section>
 
-    <!-- SIDEBAR CONTROLS -->
     <aside id="sidebar">
         <div class="console">
             <h2 style="font-size: 0.75rem; color:var(--cyber-blue);">TELEMETRY STATISTICS</h2>
@@ -129,7 +125,6 @@
                 <div class="data-point"><span>PERIMETER LOCK:</span><span id="fenceStatus" style="color:var(--radar-green)">SECURE BOUNDS</span></div>
             </div>
 
-            <!-- STREAM PANEL -->
             <div class="widget" style="border-color: var(--threat-amber);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                     <h4 style="font-size:0.55rem; color:var(--threat-amber); margin: 0;">TACTICAL OPTICS FEED // P2P ENGINE</h4>
@@ -156,14 +151,12 @@
                 </div>
             </div>
 
-            <!-- AUDIO -->
             <div class="widget" style="border-color: var(--radar-green);">
                 <h4 style="font-size:0.55rem; color:var(--radar-green); margin-bottom:5px;">VOICE CAPTURE COGNITION</h4>
                 <div id="voiceStatusDisplay" style="font-size: 0.6rem; color: var(--text-digital); margin-bottom: 5px;">AUDIO ENGINE: STANDBY</div>
                 <button class="btn-main" id="voiceListenBtn" style="border-color:var(--radar-green); color:var(--radar-green);" onclick="voiceCognitionEngine.toggleListening()">INITIALIZE VOICE AUDIO</button>
             </div>
 
-            <!-- BIOMETRICS -->
             <div class="widget" id="biometricVitalsDeck" style="display:none; border-color: var(--cyber-blue);">
                 <h4 style="font-size:0.55rem; color:var(--cyber-blue); margin-bottom:5px;">INTERCEPTED VITAL SCHEMATICS</h4>
                 <div class="data-point" style="font-size:0.6rem; color: var(--cyber-blue);"><span>NODE IDENT:</span><span id="vitalTargetId" style="color:#fff;">--</span></div>
@@ -172,7 +165,6 @@
                 <div class="data-point" style="font-size:0.6rem; color: var(--cyber-blue);"><span>STRESS INDEX:</span><span id="vitalStressValue">--</span></div>
             </div>
 
-            <!-- DIAGNOSTICS -->
             <div class="widget">
                 <h4 style="font-size:0.55rem; color:var(--cyber-blue); margin-bottom:4px;">HARDWARE DIAGNOSTICS LAYER</h4>
                 <div class="data-point"><span>CPU COMPUTE CORES:</span><span id="cpuCores">--</span></div>
@@ -181,7 +173,6 @@
                 <div class="data-point"><span>LOOP THROTTLE:</span><span id="throttleRateDisplay" style="color:var(--cyber-blue);">2000ms [MAX_FREQ]</span></div>
             </div>
 
-            <!-- STEGANOGRAPHY -->
             <div class="widget" style="border-color: var(--cyber-blue);">
                 <h4 style="font-size:0.55rem; color:var(--cyber-blue); margin-bottom:5px;">LOCATION-LOCKED CRYPTO DECODER</h4>
                 <input type="file" id="stegoLoader" accept="image/*" style="display:none;" onchange="stegoEngine.encodeData()">
@@ -190,7 +181,6 @@
                 <canvas id="stegoPreviewCanvas" style="width:100%; height:40px; background:#000; border:1px solid rgba(0,255,255,0.2); margin-top:4px; display:none;"></canvas>
             </div>
 
-            <!-- SECURE CHAT BOX -->
             <div class="chat-container">
                 <div id="chatMessages" class="chat-messages"></div>
                 <div class="chat-input-area">
@@ -206,14 +196,14 @@
     </aside>
 </main>
 
-<footer>&copy; 2026 AEGISGRID DEFENSIVE SYSTEMS. V5 SECURE-CORE ENGINE. AUTHOR: TIMMYDON.</footer>
+<footer>&copy; 2026 AEGISGRID DEFENSIVE SYSTEMS. V5.5 SECURE-CORE ENGINE. AUTHOR: TIMMYDON.</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
     // =================================================================
-    // V5 ENCAPSULATION LAYER & SECURITY PARSING
+    // CONFIGURATION & DEVICE INITIALIZATION
     // =================================================================
     if (!localStorage.getItem('aegis_device_core_hash')) {
         localStorage.setItem('aegis_device_core_hash', "AEG-V5-" + Math.random().toString(36).substring(2, 6).toUpperCase());
@@ -229,11 +219,12 @@
     // LEAFLET INITIALIZATION
     const map = L.map('map', {tap: false, zoomControl: true}).setView([FENCE_CENTER_LAT, FENCE_CENTER_LNG], 6);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    
     L.circle([FENCE_CENTER_LAT, FENCE_CENTER_LNG], {
         color: 'rgba(0, 255, 255, 0.3)', fillColor: 'transparent', dashArray: '6, 12', radius: MAX_ALLOWED_RADIUS_METERS
     }).addTo(map);
 
-    // SECURE DOM XSS SANITIZATION HELPER
+    // XSS SECURE MONITOR DISPLAY LOGGER
     function logMessageSecurely(text, type = "info") {
         const logArea = document.getElementById('logArea');
         if (!logArea) return;
@@ -246,15 +237,140 @@
         logArea.appendChild(entry);
         logArea.scrollTop = logArea.scrollHeight;
     }
-    logMessageSecurely("> [LOG_STREAM_INITIALIZED] - Hardened Input Streams Active.");
+    logMessageSecurely("> [LOG_STREAM_INITIALIZED] - v5.5 Tactical Extensions Live.");
 
-    // ENCAPSULATED NAVIGATION STATE (Protects panels from arbitrary console display overrides)
+    // =================================================================
+    // NEW TACTICAL UPGRADE MODULE CLASSES
+    // =================================================================
+    
+    // Module A: Offline Queue System
+    class OfflineDataSyncQueue {
+        constructor(swarmReference) {
+            this.swarm = swarmReference;
+            this.queueKey = "aegis_offline_queue";
+            this.checkInterval = 5000;
+            this.init();
+        }
+        init() {
+            window.addEventListener('online', () => this.flushQueue());
+            setInterval(() => { if (navigator.onLine) this.flushQueue(); }, this.checkInterval);
+        }
+        enqueue(event, payload) {
+            let queue = JSON.parse(localStorage.getItem(this.queueKey)) || [];
+            queue.push({ event, payload, timestamp: Date.now() });
+            localStorage.setItem(this.queueKey, JSON.stringify(queue));
+            logMessageSecurely(`> [QUEUE] Network connection dropped. Packet cached in local queue.`, "warn");
+        }
+        async flushQueue() {
+            let queue = JSON.parse(localStorage.getItem(this.queueKey)) || [];
+            if (queue.length === 0) return;
+            logMessageSecurely(`> [QUEUE] Connection re-established. Burst-transmitting ${queue.length} cached packets...`, "info");
+            
+            for (let packet of queue) {
+                try {
+                    await this.swarm.channel.send({
+                        type: 'broadcast',
+                        event: packet.event,
+                        payload: packet.payload
+                    });
+                } catch (e) {
+                    return; // Hold rest of flush if connection breaks down again
+                }
+            }
+            localStorage.removeItem(this.queueKey);
+            logMessageSecurely(`> [QUEUE] Local storage offline queue completely synchronized.`, "info");
+        }
+    }
+
+    // Module B: Trajectory Tails & Advanced Geofencing Alerts
+    class TacticalGeofenceEngine {
+        constructor() {
+            this.paths = {};
+            this.maxTailLength = 12;
+        }
+        processNodeTrajectory(data) {
+            if (!this.paths[data.hash]) {
+                this.paths[data.hash] = L.polyline([], {
+                    color: data.isGhost ? 'rgba(0, 255, 255, 0.4)' : 'rgba(0, 255, 102, 0.4)',
+                    weight: 2,
+                    dashArray: '2, 6'
+                }).addTo(map);
+            }
+            
+            let currentPath = this.paths[data.hash];
+            currentPath.addLatLng([data.lat, data.lng]);
+            
+            let currentPoints = currentPath.getLatLngs();
+            if (currentPoints.length > this.maxTailLength) {
+                currentPoints.shift();
+                currentPath.setLatLngs(currentPoints);
+            }
+
+            let distanceFromCenter = map.distance([data.lat, data.lng], [FENCE_CENTER_LAT, FENCE_CENTER_LNG]);
+            if (distanceFromCenter > MAX_ALLOWED_RADIUS_METERS) {
+                this.triggerBreachAlarm(data.hash, distanceFromCenter);
+            }
+        }
+        triggerBreachAlarm(nodeHash, distance) {
+            document.getElementById('fenceStatus').innerText = "ALERT: PERIMETER BREACH";
+            document.getElementById('fenceStatus').style.color = "var(--threat-red)";
+            uiRouterOverride('RED');
+            audioCore.speak(`Alert. Node ${nodeHash.substring(0, 8)} breached perimeter limits by ${Math.round(distance - MAX_ALLOWED_RADIUS_METERS)} meters.`);
+        }
+        clearAllTrails() {
+            Object.keys(this.paths).forEach(key => map.removeLayer(this.paths[key]));
+            this.paths = {};
+        }
+    }
+
+    // Module C: Macro Chaining Compiler Engine
+    class AdminMacroCompiler {
+        parseAndExecute(commandString) {
+            let tokens = commandString.split('&&').map(t => t.trim());
+            
+            tokens.forEach(token => {
+                let parts = token.split(' ');
+                let command = parts[0].toLowerCase();
+                let modifier = parts[1] ? parts[1].toLowerCase() : null;
+
+                switch(command) {
+                    case '/lockdown':
+                        swarmManager.broadcastSystemStatus('RED');
+                        uiRouterOverride('RED');
+                        logMessageSecurely("> [MACRO] Chained script execution: Global Lockdown Active.", "error");
+                        break;
+                    case '/clear':
+                        swarmManager.broadcastSystemStatus('GREEN');
+                        uiRouterOverride('GREEN');
+                        logMessageSecurely("> [MACRO] Chained script execution: Resetting Status Green.", "info");
+                        break;
+                    case '/pingall':
+                        hardwareDiagnostics.startMonitor();
+                        logMessageSecurely("> [MACRO] Chained script execution: Global Hardware Diagnostics ping issued.", "info");
+                        break;
+                    case '/ghost':
+                        if (modifier === 'on' && !swarmManager.ghostTimer) swarmManager.toggleGhostSimulation();
+                        if (modifier === 'off' && swarmManager.ghostTimer) swarmManager.toggleGhostSimulation();
+                        break;
+                    case '/wipe':
+                        systemSecurity.emergencyWipe();
+                        break;
+                    default:
+                        logMessageSecurely(`> [MACRO ERROR] Token configuration syntax broken: "${command}"`, "error");
+                }
+            });
+        }
+    }
+
+    // =================================================================
+    // CORE SYSTEM NAVIGATION MECHANICS
+    // =================================================================
     const navigationController = (() => {
         let isAdminAuthenticated = false;
         return {
             to: (section) => {
                 if (section === 'admin' && !isAdminAuthenticated) {
-                    alert("ACCESS EXCEPTION: Credentials must be verified via administrative channel.");
+                    alert("ACCESS EXCEPTION: Administrative console credentials must be verified.");
                     return;
                 }
                 unlockSystemInteraction();
@@ -283,14 +399,14 @@
                     }
                 } catch(e) {
                     alert("SECURITY BREACH: KEY INVALID.");
-                    logMessageSecurely("> [SECURITY WARNING] Unauthorized structural terminal login block.", "error");
+                    logMessageSecurely("> [SECURITY WARNING] Unauthorized access attempt detected on core layout.", "error");
                 }
             }
         };
     })();
 
     // =================================================================
-    // AUDIO ENGINE CORE
+    // AUDIO PROCESSING PLATFORM
     // =================================================================
     class AudioNotificationEngine {
         constructor() { this.ctx = null; }
@@ -333,7 +449,7 @@
     });
 
     // =================================================================
-    // DIAGNOSTICS & TELEMETRY
+    // DEVICE HARDWARE TELEMETRY SAMPLING
     // =================================================================
     class HardwareDiagnosticsModule {
         constructor() { this.updatePeriod = 2000; this.loopId = null; }
@@ -367,27 +483,31 @@
         }
         shipPayload(lat, lng) {
             let distance = map.distance([lat, lng], [FENCE_CENTER_LAT, FENCE_CENTER_LNG]);
-            swarmManager.channel.send({
-                type: 'broadcast', event: 'telemetry',
-                payload: {
-                    lat, lng, hash: MASTER_DEVICE_IDENTITY_HASH, breach: distance > MAX_ALLOWED_RADIUS_METERS,
-                    timestamp: Date.now(), isGhost: false,
-                    vitals: { hr: Math.floor(70 + Math.random()*15), temp: (36.5 + Math.random()*0.3).toFixed(1), stress: "NOMINAL" }
-                }
-            });
+            let payload = {
+                lat, lng, hash: MASTER_DEVICE_IDENTITY_HASH, breach: distance > MAX_ALLOWED_RADIUS_METERS,
+                timestamp: Date.now(), isGhost: false,
+                vitals: { hr: Math.floor(70 + Math.random()*15), temp: (36.5 + Math.random()*0.3).toFixed(1), stress: "NOMINAL" }
+            };
+
+            // Intercepting with Module A: Offline Synchronization Queue
+            if (!navigator.onLine) {
+                offlineSync.enqueue('telemetry', payload);
+            } else {
+                swarmManager.channel.send({ type: 'broadcast', event: 'telemetry', payload });
+            }
         }
     }
     const hardwareDiagnostics = new HardwareDiagnosticsModule();
 
     // =================================================================
-    // SWARM GRAPHICS ENGINE & BROADCAST PIPELINE
+    // MAIN SWARM ORCHESTRATION PIPELINE (SUPABASE INTEGRATION)
     // =================================================================
     class SwarmManagementCore {
         constructor() {
             this.nodes = {}; this.breadcrumbs = {}; this.knownHashes = new Set();
             this.meshLines = []; this.interceptArcs = []; this.ghostTimer = null;
             
-            // Isolated connection stubbing - safely configure keys securely inside Supabase rules
+            // Core Connection Keys - configure RLS tightly inside Supabase to handle securely
             this.sbUrl = "https://fmgjwxsdygcwxddvpchf.supabase.co"; 
             this.sbKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtZ2p3eHNkeWdjd3hkZHZwY2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNTk3NjksImV4cCI6MjA5NjgzNTc2OX0.fgcojr3zEv4riwXmnKPDFSLElU7TaGJLAIr4uljRn_8";
             this.client = supabase.createClient(this.sbUrl, this.sbKey);
@@ -402,8 +522,8 @@
                 .on('broadcast', { event: 'deploy_deaddrop_packet' }, p => sigIntEngine.renderDeadDropMarker(p.payload))
                 .subscribe(status => {
                     if (status === 'SUBSCRIBED') {
-                        document.getElementById('aiStatus').innerText = "ONLINE // RE-ENFORCED CORE v5.0";
-                        audioCore.speak("Aegis structural platform security v5 online.");
+                        document.getElementById('aiStatus').innerText = "ONLINE // SECURITY CORE UPGRADED v5.5";
+                        audioCore.speak("Aegis structural platform security v5 point 5 online.");
                         hardwareDiagnostics.startMonitor();
                         predictiveDaemon.start();
                     }
@@ -412,10 +532,14 @@
         }
         ingestTelemetry(data) {
             if (sigIntEngine.checkInterference(data.lat, data.lng)) {
-                logMessageSecurely(`> [SIG-INT] Stripped node transmission blocks from ${data.hash.slice(0,6)}`, "warn");
+                logMessageSecurely(`> [SIG-INT] Stripped node tracking transmission block from ${data.hash.slice(0,6)}`, "warn");
                 if (window[`m_${data.hash}`]) window[`m_${data.hash}`].setOpacity(0.15);
                 return;
             }
+
+            // Route data packet updates through Module B: Geofencing Engine
+            geofenceEngine.processNodeTrajectory(data);
+
             if (!this.breadcrumbs[data.hash]) this.breadcrumbs[data.hash] = [];
             this.breadcrumbs[data.hash].push({ lat: data.lat, lng: data.lng, time: data.timestamp });
             this.nodes[data.hash] = data;
@@ -447,8 +571,6 @@
             window[`m_${data.hash}`].bindPopup(`<b>NODE: ${data.hash.slice(0,12)}</b>`);
 
             if (data.breach) {
-                document.getElementById('fenceStatus').innerText = "BREACH WARNING";
-                document.getElementById('fenceStatus').style.color = "var(--threat-red)";
                 this.computeInterceptRoute(data);
             }
             if (predictiveDaemon.markers[data.hash]) {
@@ -489,25 +611,34 @@
                     color: 'var(--threat-red)', weight: 2, opacity: 0.8, className: 'animated-laser-arc-path'
                 }).addTo(map);
                 this.interceptArcs.push(poly);
-                logMessageSecurely("> [VECTOR] Boundary breach force interception matrix calculated.", "error");
-                audioCore.speak("Perimeter breach, computing intercept vectors.");
+                logMessageSecurely("> [VECTOR] Intercept calculations complete.", "error");
             }
         }
         broadcastSystemStatus(status) {
             unlockSystemInteraction();
-            this.channel.send({ type: 'broadcast', event: 'status_override', payload: { status } });
+            if (!navigator.onLine) {
+                offlineSync.enqueue('status_override', { status });
+            } else {
+                this.channel.send({ type: 'broadcast', event: 'status_override', payload: { status } });
+            }
         }
         sendSecureChatMessage() {
             unlockSystemInteraction();
             let inp = document.getElementById('chatInput'); if (!inp.value.trim()) return;
-            this.channel.send({ type: 'broadcast', event: 'secure_chat', payload: { message: inp.value.trim(), id: MASTER_DEVICE_IDENTITY_HASH } });
+            let payload = { message: inp.value.trim(), id: MASTER_DEVICE_IDENTITY_HASH };
+            
+            if (!navigator.onLine) {
+                offlineSync.enqueue('secure_chat', payload);
+            } else {
+                this.channel.send({ type: 'broadcast', event: 'secure_chat', payload });
+            }
             inp.value = '';
         }
         receiveChat(data) {
             const area = document.getElementById('chatMessages');
             if (!area) return;
 
-            // XSS MITIGATION: TextContent assignment keeps raw elements un-evaluated as code
+            // XSS VULNERABILITY FIXED: Using textContent to drop plain raw strings safely
             const wrapper = document.createElement('div');
             const senderSpan = document.createElement('span');
             senderSpan.style.color = 'var(--cyber-blue)';
@@ -564,7 +695,14 @@
     const swarmManager = new SwarmManagementCore();
 
     // =================================================================
-    // PREDICTIVE DRIFT DAEMON
+    // NEW ENG CODE ASSIGNMENTS
+    // =================================================================
+    const geofenceEngine = new TacticalGeofenceEngine();
+    const macroCompiler = new AdminMacroCompiler();
+    const offlineSync = new OfflineDataSyncQueue(swarmManager);
+
+    // =================================================================
+    // PREDICTIVE SIGNAL VARIANCE TRACKING DAEMON
     // =================================================================
     class PredictiveDriftDaemon {
         constructor() { this.markers = {}; }
@@ -596,7 +734,7 @@
     const predictiveDaemon = new PredictiveDriftDaemon();
 
     // =================================================================
-    // ELECTRONIC WARFARE INTERCEPT
+    // SIGINT INTELLIGENCE ENGINE
     // =================================================================
     class SignalsIntelligenceEngine {
         constructor() { this.jammers = []; this.deadDrops = {}; this.jammerPlacementPending = false; }
@@ -646,7 +784,7 @@
     const sigIntEngine = new SignalsIntelligenceEngine();
 
     // =================================================================
-    // STEGANOGRAPHY LAYER
+    // STEGANOGRAPHY PAYLOAD CONTROLS
     // =================================================================
     class SteganographyEngine {
         constructor() { this.bytes = null; }
@@ -674,7 +812,7 @@
     const stegoEngine = new SteganographyEngine();
 
     // =================================================================
-    // PEER-TO-PEER DATA PIPELINE (WebRTC Framework)
+    // WEB-RTC MEDIA STREAMING PLATFORM
     // =================================================================
     class WebRtcStreamingCore {
         constructor() {
@@ -733,7 +871,7 @@
                 }
                 let vid = document.getElementById(`v_${remoteUid}`); if (vid && ev.streams[0]) {
                     vid.srcObject = ev.streams[0];
-                    logMessageSecurely(`> [NET-OPTICS] Structural connection streaming linked with tracking node target ${remoteUid.slice(0,6)}`, "info");
+                    logMessageSecurely(`> [NET-OPTICS] Linked feed connection with tracking node ${remoteUid.slice(0,6)}`, "info");
                     audioCore.tone(880, 'sine', 0.12); audioCore.speak("Optics matrix synchronized.");
                 }
             };
@@ -795,7 +933,7 @@
     const webRtcEngine = new WebRtcStreamingCore();
 
     // =================================================================
-    // SPECTRUM FILTERS
+    // VISUAL RENDER GRAPH OVERLAYS
     // =================================================================
     class SpectrumFilterEngine {
         applyFilter(mode) {
@@ -810,7 +948,7 @@
     const spectrumEngine = new SpectrumFilterEngine();
 
     // =================================================================
-    // SPEECH CAPTURE INTELLIGENCE
+    // COGNITIVE VOICE COMMAND PATTERNS
     // =================================================================
     class VoiceCognitionEngine {
         constructor() { this.rec = null; this.active = false; }
@@ -825,7 +963,7 @@
             };
             this.rec.onresult = ev => {
                 let cmd = ev.results[0][0].transcript.trim().toLowerCase();
-                logMessageSecurely(`> [VOICE RECOGNITION]: "${cmd}"`, "info");
+                logMessageSecurely(`> [VOICE COMPREHENSION]: "${cmd}"`, "info");
                 this.parse(cmd);
             };
             this.rec.onerror = () => this.halt(); this.rec.onend = () => this.halt();
@@ -855,7 +993,7 @@
     const voiceCognitionEngine = new VoiceCognitionEngine();
 
     // =================================================================
-    // SYSTEM SECURITY CONFIGURATIONS
+    // SYSTEM SECURITY PURGING INTERFACES
     // =================================================================
     class SystemSecurityCore {
         constructor() { this.alarmInterval = null; }
@@ -863,6 +1001,7 @@
             unlockSystemInteraction();
             if (confirm("PURGE ENCRYPTED MONITOR CONFIGURATIONS IN VISUAL SYSTEM CACHE?")) {
                 document.getElementById('logArea').textContent = "";
+                geofenceEngine.clearAllTrails();
                 logMessageSecurely("[CACHE_PURGED_CLEAN_SUCCESSFULLY]");
                 swarmManager.knownHashes.clear(); swarmManager.nodes = {}; swarmManager.breadcrumbs = {};
                 document.getElementById('nodeCount').innerText = "0";
@@ -874,12 +1013,14 @@
         downloadForensicLogs() {
             unlockSystemInteraction();
             let blob = new Blob([document.getElementById('logArea').innerText], { type: "text/plain" });
-            let a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "AegisGrid_Forensics_v5.txt"; a.click();
+            let a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "AegisGrid_Forensics_v5.5.txt"; a.click();
         }
     }
     const systemSecurity = new SystemSecurityCore();
 
-    // OVERRIDE CONTROL LAYER
+    // =================================================================
+    // PERIMETER ALARM ROUTING LOGIC
+    // =================================================================
     function uiRouterOverride(extra) {
         let h = document.getElementById('mainHeader'); let p = document.getElementById('statusPulse');
         if (extra === 'RED') {
@@ -893,21 +1034,19 @@
     }
 
     function handleChatKey(e) { if (e.key === 'Enter') swarmManager.sendSecureChatMessage(); }
+    
+    // Redirecting key executions through Module C: Admin Macro Compiler
     function handleTerminalCliKey(e) {
         if (e.key === 'Enter') {
-            let inp = document.getElementById('cliInput'); let str = inp.value.trim().toLowerCase();
-            if (str === '/lockdown') {
-                swarmManager.broadcastSystemStatus('RED'); uiRouterOverride('RED');
-                logMessageSecurely("> [CLI MACRO] EMERGENCY OVERRIDE PLATFORM LOCKDOWN TRIGGERED", "error");
-            } else if (str === '/pingall') {
-                hardwareDiagnostics.startMonitor();
-                logMessageSecurely("> [CLI MACRO] Issuing active diagnostic tracking ping to all client systems...", "info");
-            } else { alert("Command string unrecognizable inside system matrices."); }
+            let inp = document.getElementById('cliInput');
+            if (inp.value.trim()) {
+                macroCompiler.parseAndExecute(inp.value.trim());
+            }
             inp.value = '';
         }
     }
 
-    // INITIALIZE CHANNELS
+    // RUN THE APPLICATION
     swarmManager.init();
 </script>
 </body>
