@@ -20,7 +20,7 @@
         .nav-btn { cursor: pointer; color: var(--text-digital); font-size: 0.7rem; text-transform: uppercase; border: none; background: none; }
         .nav-btn:hover { color: var(--radar-green); }
 
-        main { flex: 1; padding: 20px; display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+        main { flex: 1; padding: 20px; display: grid; gap: 20px; }
         .console { border: 1px solid var(--border-dim); padding: 15px; background: rgba(7, 12, 10, 0.9); display: flex; flex-direction: column; gap: 10px; }
         #map { width: 100%; height: 550px; border: 1px solid var(--radar-green); background: #000; }
         
@@ -50,7 +50,34 @@
         .animated-laser-arc-path { stroke-dasharray: 6, 18; animation: laserArcSprintingFlow 1s linear infinite; }
         @keyframes laserArcSprintingFlow { to { stroke-dashoffset: -24; } }
         
-        @media (max-width: 768px) { main { grid-template-columns: 1fr; } }
+        /* Dynamic Dual-Column Responsive Grid Module for Large Screen Environments */
+        @media (min-width: 769px) {
+            main { 
+                grid-template-columns: 1fr 360px; 
+                max-height: calc(100vh - 120px); 
+                align-items: start;
+            }
+            #map {
+                height: calc(100vh - 170px) !important; 
+            }
+            aside#sidebar {
+                height: calc(100vh - 170px);
+                overflow-y: auto; 
+                padding-right: 5px;
+            }
+            aside#sidebar::-webkit-scrollbar { width: 4px; }
+            aside#sidebar::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
+            aside#sidebar::-webkit-scrollbar-thumb { background: var(--radar-green); border-radius: 2px; }
+        }
+
+        @media (max-width: 768px) { 
+            main { 
+                grid-template-columns: 1fr;
+            } 
+            #map {
+                height: 450px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -67,7 +94,7 @@
 </div>
 
 <main id="main-content">
-    <section id="dashboard">
+    <section id="dashboard" style="width: 100%;">
         <div class="console">
             <div style="display: flex; gap: 5px; margin-bottom: 2px;">
                 <button class="btn-main" style="margin:0; padding:4px;" onclick="applySpectrumFilter('standard')">STANDARD DARK</button>
@@ -99,7 +126,7 @@
         </div>
     </section>
 
-    <<section id="about" style="display:none;" class="console">
+    <section id="about" style="display:none;" class="console">
         <h2 style="color:var(--radar-green); font-size: 0.9rem;">AEGISGRID HIGH-POWER ARTIFACT MANUAL // BY TIMMYDON</h2>
         <p style="font-size: 0.65rem; color: var(--text-digital); margin-top: 5px; line-height: 1.3;">
             Version 4.0 integrates automated kinetic dead-reckoning models, hardware-throttled update loops, location-restricted cryptographic decoders, voice cognition, optical captures, and multi-node path tracking grids. Engineered and developed under the technical direction of TIMMYDON.
@@ -118,17 +145,32 @@
                 <div class="data-point"><span>PERIMETER LOCK:</span><span id="fenceStatus" style="color:var(--radar-green)">SECURE BOUNDS</span></div>
             </div>
 
-            <!-- HARDWARE OPTICAL FEED INTERCEPT BLOCK -->
             <div class="widget" style="border-color: var(--threat-amber);">
-                <h4 style="font-size:0.55rem; color:var(--threat-amber); margin-bottom:5px;">FEED INTERCEPT // CAM CORE</h4>
-                <video id="tacticalCameraFeed" autoplay playsinline muted style="width:100%; height:130px; background:#000; border:1px solid rgba(255,170,0,0.3); object-fit: cover;"></video>
-                <div style="display: flex; gap: 5px; margin-top: 5px;">
-                    <button class="btn-main" style="margin:0; padding:4px; border-color:var(--threat-amber); color:var(--threat-amber);" onclick="initializeTacticalCamera()">ENGAGE CAM</button>
-                    <button class="btn-main" style="margin:0; padding:4px; border-color:var(--threat-red); color:var(--threat-red);" onclick="killTacticalCamera()">KILL FEED</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <h4 style="font-size:0.55rem; color:var(--threat-amber); margin: 0;">TACTICAL OPTICS FEED // P2P ENGINE</h4>
+                    <div id="callModeIndicator" style="font-size:0.5rem; color:var(--cyber-blue); font-weight:bold; border: 1px solid var(--cyber-blue); padding: 1px 4px; border-radius: 2px;">STANDBY</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,170,0,0.15); padding: 5px; margin-bottom: 6px; display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <span style="font-size:0.5rem; color:var(--text-digital);">ROUTE TARGET:</span>
+                        <select id="callTargetSelector" style="background: #000; color: var(--radar-green); border: 1px solid var(--radar-green); font-size: 0.55rem; font-family: monospace; flex-grow: 1; height: 18px; padding: 0 2px;">
+                            <option value="ALL_NODES">-- BROADCAST TO ALL (CONFERENCE MESH) --</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="videoTransmissionGrid" style="display: grid; grid-template-columns: 1fr; gap: 5px; min-height: 110px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); padding: 3px;">
+                    <div id="localVideoWrapper">
+                        <div style="font-size:0.45rem; color:var(--text-digital); text-align:center; margin-bottom:2px; letter-spacing:1px;">[LOCAL_FEED_CORE]</div>
+                        <video id="tacticalCameraFeed" autoplay playsinline muted style="width:100%; height:95px; background:#000; border:1px solid rgba(255,170,0,0.3); object-fit: cover;"></video>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 4px; margin-top: 5px;">
+                    <button class="btn-main" style="margin:0; padding:4px; font-size:0.55rem; border-color:var(--threat-amber); color:var(--threat-amber); flex: 1;" onclick="initializeTacticalCamera()">ENGAGE CAM</button>
+                    <button class="btn-main" style="margin:0; padding:4px; font-size:0.55rem; border-color:var(--radar-green); color:var(--radar-green); flex: 1;" onclick="establishOutboundCallConnection()">INITIATE LINK</button>
+                    <button class="btn-main" style="margin:0; padding:4px; font-size:0.55rem; border-color:var(--threat-red); color:var(--threat-red); flex: 1;" onclick="killTacticalCamera()">KILL FEED</button>
                 </div>
             </div>
 
-            <!-- AUDIO VOICE CAPTURE COGNITION BLOCK -->
             <div class="widget" style="border-color: var(--radar-green);">
                 <h4 style="font-size:0.55rem; color:var(--radar-green); margin-bottom:5px;">VOICE CAPTURE COGNITION</h4>
                 <div id="voiceStatusDisplay" style="font-size: 0.6rem; color: var(--text-digital); margin-bottom: 5px;">AUDIO ENGINE: STANDBY</div>
@@ -197,7 +239,6 @@
     let dynamicTransmissionIntervalLoop = null;
     let standardUpdatePeriodMilliseconds = 2000;
 
-    // Browser Security Auto-Speech Workaround Variables
     let deviceHasBeenInteractedWith = false;
     let queuedSpeechAlertPhrasesArray = [];
 
@@ -225,17 +266,14 @@
         }
     });
 
-    // Listen globally for any click to lift browser audio restriction boundaries
     document.addEventListener('click', unlockSpeechEngineOnInteraction, { once: false });
 
     function unlockSpeechEngineOnInteraction() {
         if (!deviceHasBeenInteractedWith) {
             deviceHasBeenInteractedWith = true;
-            // Warm up audio synthesis pipeline
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
             }
-            // Execute speech queue
             while (queuedSpeechAlertPhrasesArray.length > 0) {
                 let nextPhraseText = queuedSpeechAlertPhrasesArray.shift();
                 speakGlobal(nextPhraseText);
@@ -263,6 +301,27 @@
             startDeadReckoningPredictiveDaemon();
         }
     });
+
+    // Dynamic Tracking Roster Selector Loop for Targeted Video Routing
+    setInterval(() => {
+        const selector = document.getElementById('callTargetSelector');
+        if (!selector) return;
+        
+        const preservedValue = selector.value;
+        selector.innerHTML = '<option value="ALL_NODES">-- BROADCAST TO ALL (CONFERENCE MESH) --</option>';
+        
+        Object.keys(activeNodesMemoryObject).forEach(nodeId => {
+            if (nodeId !== document.getElementById('integrityHash').innerText) {
+                let opt = document.createElement('option');
+                opt.value = nodeId;
+                opt.innerText = `DIRECT CALL: [${nodeId.substring(0, 8)}]`;
+                selector.appendChild(opt);
+            }
+        });
+        if ([...selector.options].some(o => o.value === preservedValue)) {
+            selector.value = preservedValue;
+        }
+    }, 3000);
 
     function queryDeviceDiagnosticsAndThrottleLoop() {
         document.getElementById('cpuCores').innerText = `${navigator.hardwareConcurrency || 'N/A'} HARDWARE CORES`;
@@ -696,7 +755,6 @@
     }
 
     function speakGlobal(msg) {
-        // If user hasn't clicked anything yet, stash speech in buffer queue to dodge browser blocking
         if (!deviceHasBeenInteractedWith) {
             queuedSpeechAlertPhrasesArray.push(msg);
             return;
@@ -771,41 +829,235 @@
         } catch (err) { console.error("Server synchronization mismatch."); }
     }
 
-    // ==========================================
-    // HARDWARE ACCESS INTERFACES (OPTICAL & VOICE)
-    // ==========================================
+    // =================================================================
+    // DYNAMIC MULTI-PEER CONVENTIONAL & CONFERENCE P2P OPTICS CORE (WebRTC)
+    // =================================================================
     let cameraMediaStreamInstance = null;
+    let meshPeerConnectionsMap = {}; 
+    
+    const rtcIceConfig = {
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    };
+
+    channel.on('broadcast', { event: 'rtc_signal_packet' }, async (payload) => {
+        const packet = payload.payload;
+        const myUID = document.getElementById('integrityHash').innerText;
+
+        if (packet.sender === myUID) return;
+        if (packet.routingMode === 'DIRECT' && packet.targetDestination !== myUID) return;
+
+        try {
+            if (packet.sdp) {
+                if (!meshPeerConnectionsMap[packet.sender]) {
+                    setupIndividualPeerConnection(packet.sender, packet.routingMode);
+                }
+                
+                await meshPeerConnectionsMap[packet.sender].setRemoteDescription(new RTCSessionDescription(packet.sdp));
+                
+                if (packet.sdp.type === 'offer') {
+                    if (cameraMediaStreamInstance) {
+                        cameraMediaStreamInstance.getTracks().forEach(track => {
+                            meshPeerConnectionsMap[packet.sender].addTrack(track, cameraMediaStreamInstance);
+                        });
+                    }
+                    const answer = await meshPeerConnectionsMap[packet.sender].createAnswer();
+                    await meshPeerConnectionsMap[packet.sender].setLocalDescription(answer);
+                    
+                    channel.send({
+                        type: 'broadcast', event: 'rtc_signal_packet',
+                        payload: {
+                            sdp: meshPeerConnectionsMap[packet.sender].localDescription,
+                            sender: myUID,
+                            targetDestination: packet.sender,
+                            routingMode: packet.routingMode
+                        }
+                    });
+                }
+            } else if (packet.candidate) {
+                if (meshPeerConnectionsMap[packet.sender]) {
+                    await meshPeerConnectionsMap[packet.sender].addIceCandidate(new RTCIceCandidate(packet.candidate));
+                }
+            } else if (packet.signalAction === 'TERMINATE_SIGNAL_LINK') {
+                purgeRemoteStreamElement(packet.sender);
+            }
+        } catch (err) {
+            console.error("Tactical WebRTC Core Signal Failure:", err);
+        }
+    });
+
+    function setupIndividualPeerConnection(remoteOperatorUID, currentRoutingMode) {
+        let pc = new RTCPeerConnection(rtcIceConfig);
+        meshPeerConnectionsMap[remoteOperatorUID] = pc;
+
+        pc.onicecandidate = (event) => {
+            if (event.candidate) {
+                channel.send({
+                    type: 'broadcast', event: 'rtc_signal_packet',
+                    payload: {
+                        candidate: event.candidate,
+                        sender: document.getElementById('integrityHash').innerText,
+                        targetDestination: remoteOperatorUID,
+                        routingMode: currentRoutingMode
+                    }
+                });
+            }
+        };
+
+        pc.ontrack = (event) => {
+            const gridContainer = document.getElementById('videoTransmissionGrid');
+            let videoWrapperId = `wrapper_${remoteOperatorUID}`;
+            
+            if (!document.getElementById(videoWrapperId)) {
+                let wrapper = document.createElement('div');
+                wrapper.id = videoWrapperId;
+                
+                let systemLabel = currentRoutingMode === 'DIRECT' ? 'DIRECT_LINK' : 'MESH_CONF';
+                wrapper.innerHTML = `
+                    <div style="font-size:0.45rem; color:var(--cyber-blue); text-align:center; margin-bottom:2px; letter-spacing:1px;">
+                        [${systemLabel}_${remoteOperatorUID.substring(0,6)}]
+                    </div>
+                    <video id="video_${remoteOperatorUID}" autoplay playsinline style="width:100%; height:95px; background:#000; border:1px solid rgba(0,255,255,0.3); object-fit: cover;"></video>
+                `;
+                gridContainer.appendChild(wrapper);
+                
+                const totalStreams = gridContainer.children.length;
+                gridContainer.style.gridTemplateColumns = totalStreams > 4 ? '1fr 1fr 1fr' : (totalStreams > 1 ? '1fr 1fr' : '1fr');
+            }
+
+            const remoteStreamElement = document.getElementById(`video_${remoteOperatorUID}`);
+            if (remoteStreamElement && event.streams[0]) {
+                remoteStreamElement.srcObject = event.streams[0];
+                document.getElementById('logArea').innerHTML += `<br><span style='color:var(--cyber-blue)'>> [NET_OPTICS] SECURE LINK DETECTED FROM ID: ${remoteOperatorUID.substring(0,8)}</span>`;
+                triggerAudioTone(880, 'sine', 0.15);
+                speakGlobal("Incoming network stream integrated into tactical panel.");
+            }
+        };
+    }
 
     async function initializeTacticalCamera() {
         unlockSpeechEngineOnInteraction();
         const videoElement = document.getElementById('tacticalCameraFeed');
         try {
             cameraMediaStreamInstance = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, 
-                audio: false 
+                video: { facingMode: "user", width: { ideal: 320 }, height: { ideal: 240 } }, 
+                audio: true 
             });
             videoElement.srcObject = cameraMediaStreamInstance;
-            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-amber)'>> [CAM] LOCAL VIDEO OPTICS LINKED SUCCESSFUL</span>`;
-            triggerAudioTone(700, 'sine', 0.1);
-            speakGlobal("Optical camera stream active.");
+            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-amber)'>> [OPTICS] LOCAL CAMERA MODULE HARDWARE LOCK ESTABLISHED</span>`;
+            document.getElementById('callModeIndicator').innerText = "ONLINE";
+            document.getElementById('callModeIndicator').style.color = "var(--threat-amber)";
+            document.getElementById('callModeIndicator').style.borderColor = "var(--threat-amber)";
+            triggerAudioTone(600, 'sine', 0.08);
+            speakGlobal("Tactical hardware camera locked and active.");
         } catch (err) {
-            alert("CAMERA ERROR: Peripheral access blocked or missing.");
-            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [CAM] HARDWARE ERROR: CAPTURE DENIED</span>`;
+            alert("HARDWARE CAPTURE REJECTED: Confirm browser privacy or hardware permissions.");
+            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [OPTICS] CRITICAL CAPTURE ERROR: PERMISSION DENIED</span>`;
+        }
+    }
+
+    async function establishOutboundCallConnection() {
+        unlockSpeechEngineOnInteraction();
+        if (!cameraMediaStreamInstance) {
+            alert("Initialize and engage your camera array prior to issuing communication handshakes.");
+            return;
+        }
+
+        const callTargetMode = document.getElementById('callTargetSelector').value;
+        const myUID = document.getElementById('integrityHash').innerText;
+        
+        if (callTargetMode === "ALL_NODES") {
+            document.getElementById('callModeIndicator').innerText = "CONF_MESH";
+            document.getElementById('callModeIndicator').style.color = "var(--radar-green)";
+            document.getElementById('callModeIndicator').style.borderColor = "var(--radar-green)";
+            document.getElementById('logArea').innerHTML += `<br>> [NET_OPTICS] BROADCASTING CONFERENCE MESH CONNECTIONS SIGNATURES...`;
+            
+            Object.keys(activeNodesMemoryObject).forEach(async (targetOperatorID) => {
+                if (targetOperatorID !== myUID) {
+                    setupIndividualPeerConnection(targetOperatorID, 'CONFERENCE');
+                    cameraMediaStreamInstance.getTracks().forEach(track => {
+                        meshPeerConnectionsMap[targetOperatorID].addTrack(track, cameraMediaStreamInstance);
+                    });
+                    const offer = await meshPeerConnectionsMap[targetOperatorID].createOffer();
+                    await meshPeerConnectionsMap[targetOperatorID].setLocalDescription(offer);
+                    
+                    channel.send({
+                        type: 'broadcast', event: 'rtc_signal_packet',
+                        payload: { sdp: meshPeerConnectionsMap[targetOperatorID].localDescription, sender: myUID, routingMode: 'CONFERENCE' }
+                    });
+                }
+            });
+            speakGlobal("Broadcasting structural conference handshake vectors.");
+        } else {
+            const targetID = callTargetMode;
+            document.getElementById('callModeIndicator').innerText = "DIRECT_CALL";
+            document.getElementById('callModeIndicator').style.color = "var(--cyber-blue)";
+            document.getElementById('callModeIndicator').style.borderColor = "var(--cyber-blue)";
+            document.getElementById('logArea').innerHTML += `<br>> [NET_OPTICS] LAUNCHING TARGETED DIRECT HANDSHAKE TO PROXIMITY ID: ${targetID.substring(0,8)}...`;
+            
+            setupIndividualPeerConnection(targetID, 'DIRECT');
+            cameraMediaStreamInstance.getTracks().forEach(track => {
+                meshPeerConnectionsMap[targetID].addTrack(track, cameraMediaStreamInstance);
+            });
+            const offer = await meshPeerConnectionsMap[targetID].createOffer();
+            await meshPeerConnectionsMap[targetID].setLocalDescription(offer);
+            
+            channel.send({
+                type: 'broadcast', event: 'rtc_signal_packet',
+                payload: { 
+                    sdp: meshPeerConnectionsMap[targetID].localDescription, 
+                    sender: myUID, 
+                    targetDestination: targetID, 
+                    routingMode: 'DIRECT' 
+                }
+            });
+            speakGlobal("Transmitting direct private communication signal vectors.");
+        }
+    }
+
+    function purgeRemoteStreamElement(operatorUID) {
+        if (meshPeerConnectionsMap[operatorUID]) {
+            meshPeerConnectionsMap[operatorUID].close();
+            delete meshPeerConnectionsMap[operatorUID];
+        }
+        let wrapper = document.getElementById(`wrapper_${operatorUID}`);
+        if (wrapper) {
+            wrapper.remove();
+            const gridContainer = document.getElementById('videoTransmissionGrid');
+            const totalStreams = gridContainer.children.length;
+            gridContainer.style.gridTemplateColumns = totalStreams > 4 ? '1fr 1fr 1fr' : (totalStreams > 1 ? '1fr 1fr' : '1fr');
         }
     }
 
     function killTacticalCamera() {
         unlockSpeechEngineOnInteraction();
-        const videoElement = document.getElementById('tacticalCameraFeed');
+        const localVideo = document.getElementById('tacticalCameraFeed');
+        const myUID = document.getElementById('integrityHash').innerText;
+        
+        channel.send({
+            type: 'broadcast', event: 'rtc_signal_packet',
+            payload: { signalAction: 'TERMINATE_SIGNAL_LINK', sender: myUID }
+        });
+
         if (cameraMediaStreamInstance) {
             cameraMediaStreamInstance.getTracks().forEach(track => track.stop());
-            videoElement.srcObject = null;
+            localVideo.srcObject = null;
             cameraMediaStreamInstance = null;
-            document.getElementById('logArea').innerHTML += `<br>> [CAM] OPTICAL FEED DISCONNECTED BY OPERATOR`;
-            speakGlobal("Optical camera offline.");
         }
+
+        Object.keys(meshPeerConnectionsMap).forEach(uid => {
+            purgeRemoteStreamElement(uid);
+        });
+
+        document.getElementById('callModeIndicator').innerText = "STANDBY";
+        document.getElementById('callModeIndicator').style.color = "var(--cyber-blue)";
+        document.getElementById('callModeIndicator').style.borderColor = "var(--cyber-blue)";
+        document.getElementById('logArea').innerHTML += `<br>> [NET_OPTICS] TELEMETRY COMMUNICATIONS ROUTER TERMINATED AND PURGED.`;
+        speakGlobal("All visual streaming modules deactivated.");
     }
 
+    // ==========================================
+    // VOICE COMMAND ENGINE COGNITION CORE
+    // ==========================================
     let voiceRecognitionInstance = null;
     let voiceIsListeningState = false;
 
