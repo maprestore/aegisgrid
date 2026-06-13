@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AEGISGRID // ULTRA COMMAND MASTER CORE</title>
+    <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root { 
@@ -47,9 +48,6 @@
         
         footer { padding: 15px; text-align: center; border-top: 1px solid var(--border-dim); font-size: 0.6rem; color: var(--text-digital); }
         @media (max-width: 768px) { main { grid-template-columns: 1fr; } }
-
-        .animated-laser-arc-path { stroke-dasharray: 8, 24; animation: laserArcSprintingFlow 1.5s linear infinite; }
-        @keyframes laserArcSprintingFlow { to { stroke-dashoffset: -32; } }
     </style>
 </head>
 <body>
@@ -67,32 +65,20 @@
 
 <main id="main-content">
     <section id="dashboard">
-        <div class="console">
-            <div id="map"></div>
-        </div>
+        <div class="console"><div id="map"></div></div>
     </section>
     
     <section id="admin" style="display:none;" class="console">
         <h2 style="color:var(--radar-green); font-size: 1rem;">ADMIN COMMAND // MASTER OVERRIDE</h2>
         <div class="widget">
             <h3 style="font-size: 0.6rem; color:var(--radar-green); margin-bottom:8px;">SYSTEM TELEMETRY DIAGNOSTICS</h3>
-            <button class="btn-main" style="border-color:#00ff66" onclick="broadcastSystemStatus('GREEN')">SET GLOBAL STATUS: GREEN</button>
-            <button class="btn-main" style="border-color:#ff0000" onclick="broadcastSystemStatus('RED')">SET GLOBAL STATUS: RED</button>
-            <button class="btn-main" style="border-color:var(--threat-amber)" onclick="deployGlobalBounty()">DEPLOY SECTOR MISSION OBJECTIVE</button>
-        </div>
-        <div class="widget">
-            <p style="font-size: 0.7rem; color: #fff;">Forensic System Logs:</p>
-            <div id="logArea" style="font-size: 0.5rem; color: var(--radar-green); margin-top: 10px; height: 100px; overflow-y: scroll;">[SYSTEM_LOG_INITIALIZED]</div>
-            <button class="btn-main" onclick="exportLogs()">EXPORT FORENSIC DATA</button>
-            <button class="btn-main" style="border-color:#ff0000; color:#ff0000;" onclick="emergencyWipe()">EMERGENCY WIPE</button>
+            <button class="btn-main" onclick="broadcastSystemStatus('GREEN')">SET GLOBAL STATUS: GREEN</button>
+            <button class="btn-main" onclick="broadcastSystemStatus('RED')">SET GLOBAL STATUS: RED</button>
         </div>
     </section>
 
     <section id="about" style="display:none;" class="console">
         <h2 style="color:var(--radar-green); font-size: 1rem;">SYSTEM ARCHITECT: TIMMY DON</h2>
-        <p style="font-size: 0.7rem; color: var(--text-digital); margin-top: 10px;">
-            AegisGrid Ultra Architecture integrates live telemetry tracking, device diagnosis, encrypted group communication, boundary geo-fencing, and decentralized objective routing.
-        </p>
     </section>
 
     <aside id="sidebar">
@@ -103,123 +89,75 @@
             <div class="widget">
                 <div class="data-point"><span>HIVE HEARTBEAT:</span><span id="hbStatus">●</span></div>
                 <div class="data-point"><span>ACTIVE NODES:</span><span id="nodeCount">0</span></div>
-                <div class="data-point"><span>SECTOR RISK:</span><span id="threatLevel" style="color:var(--radar-green)">NOMINAL</span></div>
-                <div class="data-point"><span>PERIMETER:</span><span id="fenceStatus" style="color:var(--radar-green)">SECURE</span></div>
-            </div>
-
-            <div class="widget" id="biometricVitalsDeck" style="display:none; border-color: var(--cyber-blue);">
-                <h4 style="font-size:0.55rem; color:var(--cyber-blue); margin-bottom:5px;">INTERCEPTED TARGET BIO-TELEMETRY</h4>
-                <div class="data-point" style="font-size:0.6rem; color: var(--cyber-blue);"><span>NODE SIG:</span><span id="vitalTargetId" style="color:#fff;">--</span></div>
-                <div class="data-point" style="font-size:0.6rem; color: var(--cyber-blue);"><span>PULSE RATE:</span><span id="vitalPulseValue" style="color:var(--threat-red);">-- BPM</span></div>
-                <div class="data-point" style="font-size:0.6rem; color: var(--cyber-blue);"><span>THERMAL GRAD:</span><span id="vitalTempValue">-- °C</span></div>
-                <div class="data-point" style="font-size:0.6rem; color: var(--cyber-blue);"><span>STRESS INDEX:</span><span id="vitalStressValue">--</span></div>
             </div>
 
             <div class="widget" style="margin-top: 0;">
                 <h4 style="font-size:0.55rem; color:var(--radar-green); margin-bottom:5px;">LOCAL DEVICE DIAGNOSTICS</h4>
-                <div class="data-point" style="font-size:0.6rem;"><span>NET CORES:</span><span id="cpuCores">--</span></div>
-                <div class="data-point" style="font-size:0.6rem;"><span>NET SPEED:</span><span id="netSpeed">--</span></div>
-                <div class="data-point" style="font-size:0.6rem;"><span>BATTERY:</span><span id="batteryDisplay">--</span></div>
-            </div>
-
-            <div class="widget" style="margin-top: 0; border-color: var(--cyber-blue);">
-                <h4 style="font-size:0.55rem; color:var(--cyber-blue); margin-bottom:5px;">CIPHER LAYER SECURE STEGO</h4>
-                <input type="file" id="stegoLoader" accept="image/*" style="display:none;" onchange="encodeSecretDataIntoDecoyImage()">
-                <button class="btn-main" style="border-color:var(--cyber-blue); color:var(--cyber-blue); font-size:0.55rem; padding:4px;" onclick="document.getElementById('stegoLoader').click()">EMBED MAP SNAPSHOT</button>
-                <button class="btn-main" style="border-color:var(--cyber-blue); color:var(--cyber-blue); font-size:0.55rem; padding:4px;" onclick="extractSecretDataFromDecoyImage()">DECRYPT IMAGE MATRIX</button>
-                <canvas id="stegoPreviewCanvas" style="width:100%; height:50px; background:#000; border:1px solid rgba(0,255,255,0.2); margin-top:4px; display:none;"></canvas>
-            </div>
-            
-            <div class="video-container">
-                <div class="vid-overlay">COMMS FEED: ENCRYPTED</div>
-                <video id="localVideo" autoplay playsinline muted></video>
+                <div class="data-point"><span>NET CORES:</span><span id="cpuCores">--</span></div>
+                <div class="data-point"><span>NET SPEED:</span><span id="netSpeed">--</span></div>
+                <div class="data-point"><span>BATTERY:</span><span id="batteryDisplay">--</span></div>
             </div>
 
             <div class="chat-container">
                 <div id="chatMessages" class="chat-messages"></div>
                 <div class="chat-input-area">
-                    <input type="text" id="chatInput" class="chat-input" placeholder="SECURE RADIO TRANSMISSION..." onkeypress="handleChatKey(event)">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="SECURE RADIO TRANSMISSION...">
                     <button class="chat-send-btn" onclick="sendSecureChatMessage()">SEND</button>
                 </div>
             </div>
 
-            <div id="integrityHash" class="hash-display" style="margin-top:0;">SYNC_READY</div>
             <button class="btn-main" onclick="transmitData()">TRANSMIT TELEMETRY</button>
-            <button class="btn-main" style="border-color:var(--radar-green)" onclick="toggleSyntheticGhostPopulator()">GHOST WALK SIMULATOR</button>
-            <button class="btn-main" style="border-color:var(--threat-amber)" onclick="initVoice()">VOICE COMMAND</button>
         </div>
     </aside>
 </main>
 
-<footer>&copy; 2026 AEGISGRID DEFENSIVE SYSTEMS. ARCHITECT: TIMMY DON.</footer>
+<footer>&copy; 2026 AEGISGRID DEFENSIVE SYSTEMS.</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-    let telemetryHistory = [];
-    let knownNodes = new Set();
-    let audioCtx = null;
-    let alarmInterval = null;
-    let localStream = null;
-    let activeNodesMemoryObject = {};
-    let laserTracerArcsArray = [];
-    let individualEntityFootprintBreadcrumbs = {};
-    let syntheticHumanLoopTimer = null;
-    let internalCarrierStegoBytes = null;
-    let convergenceZoneCircles = [];
+    // 1. Initialize Socket.io
+    const socket = io();
 
-    const FENCE_CENTER_LAT = 9.0820;
-    const FENCE_CENTER_LNG = 8.6753;
-    const MAX_ALLOWED_RADIUS_METERS = 500000; 
-
-    let map = L.map('map', {tap: false}).setView([FENCE_CENTER_LAT, FENCE_CENTER_LNG], 6);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
-
-    const SUPABASE_URL = "https://gxsfofwshgscfbypswqq.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4c2ZvZndzaGdzY2ZieXBzd3FxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTgzNjU1NDIsImV4cCI6MjAzMzk0MTU0Mn0.7e_lZWhv680y93p7KymB1PZIn-LNoXW5P-j8_lq3xIE";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-    const channel = supabaseClient.channel('aegis_master_swarm', {
-        config: { broadcast: { self: true } }
-    });
-
-    channel
-    .on('broadcast', { event: 'telemetry' }, (payload) => handleIncomingNode(payload.payload))
-    .on('broadcast', { event: 'status_override' }, (payload) => executeLocalStatusChange(payload.payload.status))
-    .on('broadcast', { event: 'secure_chat' }, (payload) => appendChatMessage(payload.payload))
-    .on('broadcast', { event: 'bounty_deploy' }, (payload) => renderBountyObjective(payload.payload))
-    .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-            document.getElementById('aiStatus').innerText = "ONLINE // HARMONIZED GATEWAY";
-            speakGlobal("Aegis ultra command architecture initialized successfully.");
-            queryDeviceDiagnostics();
-            setupAmbientDeadManSensor();
-        }
-    });
-
-    function queryDeviceDiagnostics() {
-        document.getElementById('cpuCores').innerText = `${navigator.hardwareConcurrency || 'N/A'} CORE THREADS`;
-        if (navigator.connection) {
-            document.getElementById('netSpeed').innerText = `${navigator.connection.downlink || 'N/A'} MBPS`;
-        }
-        if (navigator.getBattery) {
-            try {
-                navigator.getBattery().then(battery => {
-                    const updateBattery = () => {
-                        document.getElementById('batteryDisplay').innerText = `${Math.round(battery.level * 100)}% ${battery.charging ? '[CHARGING]' : '[DISCHARGING]'}`;
-                    };
-                    updateBattery();
-                    battery.onlevelchange = updateBattery;
-                    battery.onchargingchange = updateBattery;
-                });
-            } catch(e) { document.getElementById('batteryDisplay').innerText = "BLOCKED"; }
-        } else { document.getElementById('batteryDisplay').innerText = "NOT SUPPORTED"; }
+    // 2. Radio Transmission & Socket Listeners
+    function sendSecureChatMessage() {
+        const input = document.getElementById('chatInput');
+        if (!input.value.trim()) return;
+        socket.emit('transmit-secure-packet', { message: input.value.trim() });
+        input.value = '';
     }
 
-    // ... [Rest of your functional logic from the original file remains unchanged] ...
-    
-    // Placeholder to keep structure valid
+    socket.on('broadcast-secure-packet', (data) => {
+        const msgArea = document.getElementById('chatMessages');
+        msgArea.innerHTML += `<div><span style="color:var(--radar-green)">[${data.sender}]:</span> ${data.message}</div>`;
+        msgArea.scrollTop = msgArea.scrollHeight;
+    });
+
+    // 3. Diagnostics
+    async function queryDeviceDiagnostics() {
+        document.getElementById('cpuCores').innerText = `${navigator.hardwareConcurrency || 'N/A'} CORE THREADS`;
+        if (navigator.connection) document.getElementById('netSpeed').innerText = `${navigator.connection.downlink || 'N/A'} MBPS`;
+        
+        if (navigator.getBattery) {
+            try {
+                const battery = await navigator.getBattery();
+                const update = () => document.getElementById('batteryDisplay').innerText = `${Math.round(battery.level * 100)}%`;
+                update();
+                battery.onlevelchange = update;
+            } catch(e) { document.getElementById('batteryDisplay').innerText = "BLOCKED"; }
+        }
+    }
+
+    function transmitData() {
+        socket.emit('transmit-secure-packet', { message: "SYSTEM_TELEMETRY_SYNC_INIT" });
+    }
+
+    window.onload = () => {
+        queryDeviceDiagnostics();
+        document.getElementById('aiStatus').innerText = "ONLINE // HARMONIZED GATEWAY";
+    };
+
     function showSection(id) {
         document.getElementById('dashboard').style.display = (id === 'dashboard') ? 'block' : 'none';
         document.getElementById('admin').style.display = (id === 'admin') ? 'block' : 'none';
