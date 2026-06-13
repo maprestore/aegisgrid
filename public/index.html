@@ -118,6 +118,23 @@
                 <div class="data-point"><span>PERIMETER LOCK:</span><span id="fenceStatus" style="color:var(--radar-green)">SECURE BOUNDS</span></div>
             </div>
 
+            <!-- HARDWARE OPTICAL FEED INTERCEPT BLOCK -->
+            <div class="widget" style="border-color: var(--threat-amber);">
+                <h4 style="font-size:0.55rem; color:var(--threat-amber); margin-bottom:5px;">FEED INTERCEPT // CAM CORE</h4>
+                <video id="tacticalCameraFeed" autoplay playsinline muted style="width:100%; height:130px; background:#000; border:1px solid rgba(255,170,0,0.3); object-fit: cover;"></video>
+                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                    <button class="btn-main" style="margin:0; padding:4px; border-color:var(--threat-amber); color:var(--threat-amber);" onclick="initializeTacticalCamera()">ENGAGE CAM</button>
+                    <button class="btn-main" style="margin:0; padding:4px; border-color:var(--threat-red); color:var(--threat-red);" onclick="killTacticalCamera()">KILL FEED</button>
+                </div>
+            </div>
+
+            <!-- AUDIO VOICE CAPTURE COGNITION BLOCK -->
+            <div class="widget" style="border-color: var(--radar-green);">
+                <h4 style="font-size:0.55rem; color:var(--radar-green); margin-bottom:5px;">VOICE CAPTURE COGNITION</h4>
+                <div id="voiceStatusDisplay" style="font-size: 0.6rem; color: var(--text-digital); margin-bottom: 5px;">AUDIO ENGINE: STANDBY</div>
+                <button class="btn-main" id="voiceListenBtn" style="border-color:var(--radar-green); color:var(--radar-green);" onclick="toggleVoiceCommandEngine()">INITIALIZE VOICE AUDIO</button>
+            </div>
+
             <div class="widget" id="biometricVitalsDeck" style="display:none; border-color: var(--cyber-blue);">
                 <h4 style="font-size:0.55rem; color:var(--cyber-blue); margin-bottom:5px;">INTERCEPTED VITAL SCHEMATICS</h4>
                 <div class="data-point" style="font-size:0.6rem; color: var(--cyber-blue);"><span>NODE IDENT:</span><span id="vitalTargetId" style="color:#fff;">--</span></div>
@@ -132,21 +149,6 @@
                 <div class="data-point"><span>NETWORK BANDWIDTH:</span><span id="netSpeed">--</span></div>
                 <div class="data-point"><span>DEVICE POWER PACK:</span><span id="batteryDisplay">--</span></div>
                 <div class="data-point"><span>LOOP THROTTLE:</span><span id="throttleRateDisplay" style="color:var(--cyber-blue);">2000ms [MAX_FREQ]</span></div>
-            </div>
-
-            <div class="widget" style="border-color: var(--threat-amber);">
-                <h4 style="font-size:0.55rem; color:var(--threat-amber); margin-bottom:5px;">FEED INTERCEPT // CAM CORE</h4>
-                <video id="tacticalCameraFeed" autoplay playsinline muted style="width:100%; height:130px; background:#000; border:1px solid rgba(255,170,0,0.3); object-fit: cover;"></video>
-                <div style="display: flex; gap: 5px; margin-top: 5px;">
-                    <button class="btn-main" style="margin:0; padding:4px; border-color:var(--threat-amber); color:var(--threat-amber);" onclick="initializeTacticalCamera()">ENGAGE CAM</button>
-                    <button class="btn-main" style="margin:0; padding:4px; border-color:var(--threat-red); color:var(--threat-red);" onclick="killTacticalCamera()">KILL FEED</button>
-                </div>
-            </div>
-
-            <div class="widget" style="border-color: var(--radar-green);">
-                <h4 style="font-size:0.55rem; color:var(--radar-green); margin-bottom:5px;">VOICE CAPTURE COGNITION</h4>
-                <div id="voiceStatusDisplay" style="font-size: 0.6rem; color: var(--text-digital); margin-bottom: 5px;">AUDIO ENGINE: STANDBY</div>
-                <button class="btn-main" id="voiceListenBtn" style="border-color:var(--radar-green); color:var(--radar-green);" onclick="toggleVoiceCommandEngine()">INITIALIZE VOICE AUDIO</button>
             </div>
 
             <div class="widget" style="border-color: var(--cyber-blue);">
@@ -195,6 +197,10 @@
     let dynamicTransmissionIntervalLoop = null;
     let standardUpdatePeriodMilliseconds = 2000;
 
+    // Browser Security Auto-Speech Workaround Variables
+    let deviceHasBeenInteractedWith = false;
+    let queuedSpeechAlertPhrasesArray = [];
+
     const FENCE_CENTER_LAT = 9.0820;
     const FENCE_CENTER_LNG = 8.6753;
     const MAX_ALLOWED_RADIUS_METERS = 500000; 
@@ -207,6 +213,7 @@
     }).addTo(map);
 
     map.on('click', function(e) {
+        unlockSpeechEngineOnInteraction();
         if (jammerDeploymentModeActive) {
             const randomJammerId = "JAM-" + Math.floor(100 + Math.random() * 900);
             channel.send({
@@ -217,6 +224,24 @@
             document.getElementById('logArea').innerHTML += `<br>> Signals Jamming deployment request transmitted.`;
         }
     });
+
+    // Listen globally for any click to lift browser audio restriction boundaries
+    document.addEventListener('click', unlockSpeechEngineOnInteraction, { once: false });
+
+    function unlockSpeechEngineOnInteraction() {
+        if (!deviceHasBeenInteractedWith) {
+            deviceHasBeenInteractedWith = true;
+            // Warm up audio synthesis pipeline
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+            }
+            // Execute speech queue
+            while (queuedSpeechAlertPhrasesArray.length > 0) {
+                let nextPhraseText = queuedSpeechAlertPhrasesArray.shift();
+                speakGlobal(nextPhraseText);
+            }
+        }
+    }
 
     const SUPABASE_URL = "https://fmgjwxsdygcwxddvpchf.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtZ2p3eHNkeWdjd3hkZHZwY2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNTk3NjksImV4cCI6MjA5NjgzNTc2OX0.fgcojr3zEv4riwXmnKPDFSLElU7TaGJLAIr4uljRn_8";
@@ -337,6 +362,7 @@
             knownNodes.add(data.hash);
             document.getElementById('nodeCount').innerText = knownNodes.size;
             document.getElementById('logArea').innerHTML += `<br>> MESH LINK COMPLETED: ${data.hash}`;
+            speakGlobal("New node structure attached to grid network.");
         }
         
         document.getElementById('integrityHash').innerText = data.hash;
@@ -346,6 +372,7 @@
             markerDisplayHexColor = 'var(--threat-red)';
             map.setView([data.lat, data.lng], 9); 
             triggerAudioTone(880, 'sawtooth', 0.4);
+            speakGlobal("Alert! Critical stress markers detected on incoming cluster frame.");
         }
 
         const divMarkerMarkup = `<div style="background:${markerDisplayHexColor}; width:14px; height:14px; border-radius:50%; box-shadow:0 0 12px ${markerDisplayHexColor}; border:2px solid black;"></div>`;
@@ -376,6 +403,7 @@
     }
 
     function displayTargetBiometricHUD(id) {
+        unlockSpeechEngineOnInteraction();
         const node = activeNodesMemoryObject[id];
         if (!node || !node.vitals) return;
         document.getElementById('biometricVitalsDeck').style.display = 'block';
@@ -384,6 +412,7 @@
         document.getElementById('vitalTempValue').innerText = `${node.vitals.temp} °C`;
         document.getElementById('vitalStressValue').innerText = node.vitals.stress;
         document.getElementById('vitalStressValue').style.color = node.vitals.stress.includes("CRITICAL") ? 'var(--threat-red)' : 'var(--radar-green)';
+        speakGlobal(`Biometrics hooked for node ${id.slice(0,4)}`);
     }
 
     function calculateAutonomousInterceptVector(breachingNode) {
@@ -416,6 +445,7 @@
             laserTracerArcsArray.push(interceptTracerVisualPath);
             
             document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [VECTOR] ASSIGNED UNIT ${nearestIntercepterNode.hash.slice(0,6)} TO INTERCEPT BREACH</span>`;
+            speakGlobal("Perimeter boundary breach confirmed. Intercept calculation vector mapped.");
         }
     }
 
@@ -470,6 +500,7 @@
                         kineticDriftPredictiveMarkers[id].setLatLng([projectedExtrapolatedLat, projectedExtrapolatedLng]);
                     } else {
                         document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-amber)'>> [WARN] LOST COMMS LINK WITH ${id.slice(0,6)}. ENGAGING KINETIC DRIFT MODELS.</span>`;
+                        speakGlobal(`Signal dropped for node ${id.slice(0,4)}. Running drift projection.`);
                         
                         const ghostVectorHtmlMarkup = `<div style="background:transparent; width:14px; height:14px; border-radius:50%; border:2px dashed var(--threat-amber); font-size:8px; text-align:center; color:var(--threat-amber);">?</div>`;
                         kineticDriftPredictiveMarkers[id] = L.marker([projectedExtrapolatedLat, projectedExtrapolatedLng], {
@@ -482,6 +513,7 @@
     }
 
     function toggleAdminJammerDeploymentMode() {
+        unlockSpeechEngineOnInteraction();
         jammerDeploymentModeActive = true;
         alert("ELECTRONIC WARFARE INTERCEPT MODE READY: Click coordinates anywhere on the master map layout grid to drop an EW jamming shield field.");
     }
@@ -494,9 +526,11 @@
         interferenceFieldCircle.bindPopup(`<b>ACTIVE SIG-INT JAMMING SECTOR</b><br>ID: ${data.id}<br>Frequencies Blanked: UHF/VHF Tracking Loops`);
         activeJammingZoneCircles.push(interferenceFieldCircle);
         document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [SIG-INT] ELECTRONIC WARFARE JAMMER BLANKET INSTANTIATED AT REFMESH ${data.id}</span>`;
+        speakGlobal("Electronic jamming frequency blanket deployed successfully.");
     }
 
     function deployCryptographicDeadDropTarget() {
+        unlockSpeechEngineOnInteraction();
         const centerRefCoord = map.getCenter();
         channel.send({
             type: 'broadcast', event: 'deploy_deaddrop_packet',
@@ -512,6 +546,7 @@
             })
         }).addTo(map).bindPopup(`<b>CRYPTOGRAPHIC DEAD-DROP CONTAINER</b><br>ID: ${data.dropId}<br>Security Layer: Proximity Verification Enforced`);
         document.getElementById('logArea').innerHTML += `<br><span style='color:var(--cyber-blue)'>> [CRYPTO] CONFISCATED DATA DROP PATTERN RECONSTRUCTED: ${data.dropId}</span>`;
+        speakGlobal("Cryptographic drop point established.");
     }
 
     function encodeSecretDataIntoDecoyImage() {
@@ -528,11 +563,13 @@
             img.onload = function() { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
             img.src = e.target.result;
             document.getElementById('logArea').innerHTML += `<br>> Data stream packaged inside canvas matrix structure.`;
+            speakGlobal("Data injection loop complete.");
         };
         reader.readAsDataURL(file);
     }
 
     function extractSecretDataFromDecoyImage() {
+        unlockSpeechEngineOnInteraction();
         if (!internalCarrierStegoBytes) {
             alert("No data payload signature allocated inside system caches."); return;
         }
@@ -551,10 +588,11 @@
 
             if (localizedOperatorProximityCleared) {
                 document.getElementById('logArea').innerHTML += `<br><span style='color:var(--radar-green)'>> [DECIPHER SUCCESS] CLASSIFIED FOOTPRINT DATA BLOCK DUMPED INTO TEXT MATRIX.</span>`;
-                speakGlobal("Classified operation matrix decoded completely inside secure target perimeter parameters.");
+                speakGlobal("Classified data blocks extracted within perimeter.");
             } else {
                 alert("DECRYPTION ERROR: Cryptographic signature keys locked. Device GPS registration sits outside localized container extraction radius.");
                 document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [SECURITY FAILURE] DECRYPTION ATTEMPT OUTSIDE ZONE CONSTANTS BLOCKED</span>`;
+                speakGlobal("Security violation. Decryption keys structural access blocked.");
             }
         }, (err) => {
             document.getElementById('logArea').innerHTML += `<br><span style='color:var(--cyber-blue)'>> [DEV COMPLIANCE] BYPASSING HARDWARE GEOLOCATION ACCESS CHECKS... PROXIMITY CONFIRMED</span>`;
@@ -563,17 +601,21 @@
     }
 
     function applySpectrumFilter(filterStyleModeKey) {
+        unlockSpeechEngineOnInteraction();
         const containerElementMapLayer = document.getElementById('map');
         containerElementMapLayer.className = ""; 
         
         if (filterStyleModeKey === 'thermal') {
             containerElementMapLayer.classList.add('map-filter-thermal');
             document.getElementById('threatLevel').innerText = "THERMAL FREQ OVERLAY";
+            speakGlobal("Thermal spectrum applied.");
         } else if (filterStyleModeKey === 'vector') {
             containerElementMapLayer.classList.add('map-filter-vector');
             document.getElementById('threatLevel').innerText = "VECTOR TOPOLOGY MODE";
+            speakGlobal("Topology mode active.");
         } else {
             document.getElementById('threatLevel').innerText = "NOMINAL OPERATIONAL CORE";
+            speakGlobal("Standard mapping restored.");
         }
     }
 
@@ -590,6 +632,7 @@
             } else if (directScriptString === '/pingall') {
                 queryDeviceDiagnosticsAndThrottleLoop();
                 document.getElementById('logArea').innerHTML += `<br>> [MACRO] BROADCASTING SILENT REFMESH TELEMETRY REQUEST TO SWARM ARRAYS...`;
+                speakGlobal("Pinging tactical arrays.");
             } else {
                 alert("Unknown terminal macro syntax execution code input string parameters.");
             }
@@ -598,11 +641,15 @@
     }
 
     function toggleSyntheticGhostPopulator() {
+        unlockSpeechEngineOnInteraction();
         if (syntheticHumanLoopTimer) {
             clearInterval(syntheticHumanLoopTimer); syntheticHumanLoopTimer = null;
-            document.getElementById('logArea').innerHTML += `<br>> Procedural generators set to offline.`; return;
+            document.getElementById('logArea').innerHTML += `<br>> Procedural generators set to offline.`; 
+            speakGlobal("Simulation terminated.");
+            return;
         }
         document.getElementById('logArea').innerHTML += `<br><span style='color:var(--cyber-blue)'>> Generating procedural ghost target arrays...</span>`;
+        speakGlobal("Launching ghost drone target simulator loops.");
         
         syntheticHumanLoopTimer = setInterval(() => {
             for (let i = 0; i < 4; i++) {
@@ -634,6 +681,7 @@
 
     function handleChatKey(e) { if(e.key === 'Enter') sendSecureChatMessage(); }
     function sendSecureChatMessage() {
+        unlockSpeechEngineOnInteraction();
         const input = document.getElementById('chatInput'); if (!input.value.trim()) return;
         channel.send({ type: 'broadcast', event: 'secure_chat', payload: { message: input.value.trim(), id: "NODE_" + Math.random().toString(36).substring(2, 5).toUpperCase() } });
         input.value = '';
@@ -644,9 +692,16 @@
         msgArea.innerHTML += `<div><span style="color:var(--radar-green)">[${data.id}]:</span> ${data.message}</div>`;
         msgArea.scrollTop = msgArea.scrollHeight;
         triggerAudioTone(900, 'sine', 0.04);
+        speakGlobal(`Incoming data translation packet from channel node.`);
     }
 
     function speakGlobal(msg) {
+        // If user hasn't clicked anything yet, stash speech in buffer queue to dodge browser blocking
+        if (!deviceHasBeenInteractedWith) {
+            queuedSpeechAlertPhrasesArray.push(msg);
+            return;
+        }
+
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
             const utter = new SpeechSynthesisUtterance(msg);
@@ -657,6 +712,7 @@
     }
 
     function broadcastSystemStatus(status) {
+        unlockSpeechEngineOnInteraction();
         channel.send({ type: 'broadcast', event: 'status_override', payload: { status: status } });
     }
 
@@ -674,6 +730,7 @@
     }
 
     function emergencyWipe() {
+        unlockSpeechEngineOnInteraction();
         if (confirm("PURGE TOTAL ENCRYPTED OPERATION CACHES IN SYSTEM SHELFS?")) {
             document.getElementById('logArea').innerHTML = "[SYSTEM_WIPED_CLEAN]";
             knownNodes.clear(); activeNodesMemoryObject = {}; individualEntityFootprintBreadcrumbs = {};
@@ -684,6 +741,7 @@
     }
 
     function downloadForensicLogs() {
+        unlockSpeechEngineOnInteraction();
         const logContent = document.getElementById('logArea').innerText;
         const blob = new Blob([logContent], { type: "text/plain" });
         const a = document.createElement("a");
@@ -693,6 +751,7 @@
     }
 
     function showSection(id) {
+        unlockSpeechEngineOnInteraction();
         document.getElementById('dashboard').style.display = (id === 'dashboard') ? 'block' : 'none';
         document.getElementById('admin').style.display = (id === 'admin') ? 'block' : 'none';
         document.getElementById('about').style.display = (id === 'about') ? 'block' : 'none';
@@ -700,6 +759,7 @@
     }
 
     async function requestAdminAccess() {
+        unlockSpeechEngineOnInteraction();
         const input = prompt("ENTER MASTER ARCHITECT SECURITY ACCESS KEY:"); if (!input) return;
         try {
             const response = await fetch('/api/authorize-admin', {
@@ -712,11 +772,12 @@
     }
 
     // ==========================================
-    // INTEGRATED OPTICAL FEED & VOICE COGNITION LAYERS
+    // HARDWARE ACCESS INTERFACES (OPTICAL & VOICE)
     // ==========================================
     let cameraMediaStreamInstance = null;
 
     async function initializeTacticalCamera() {
+        unlockSpeechEngineOnInteraction();
         const videoElement = document.getElementById('tacticalCameraFeed');
         try {
             cameraMediaStreamInstance = await navigator.mediaDevices.getUserMedia({ 
@@ -726,6 +787,7 @@
             videoElement.srcObject = cameraMediaStreamInstance;
             document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-amber)'>> [CAM] LOCAL VIDEO OPTICS LINKED SUCCESSFUL</span>`;
             triggerAudioTone(700, 'sine', 0.1);
+            speakGlobal("Optical camera stream active.");
         } catch (err) {
             alert("CAMERA ERROR: Peripheral access blocked or missing.");
             document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [CAM] HARDWARE ERROR: CAPTURE DENIED</span>`;
@@ -733,12 +795,14 @@
     }
 
     function killTacticalCamera() {
+        unlockSpeechEngineOnInteraction();
         const videoElement = document.getElementById('tacticalCameraFeed');
         if (cameraMediaStreamInstance) {
             cameraMediaStreamInstance.getTracks().forEach(track => track.stop());
             videoElement.srcObject = null;
             cameraMediaStreamInstance = null;
             document.getElementById('logArea').innerHTML += `<br>> [CAM] OPTICAL FEED DISCONNECTED BY OPERATOR`;
+            speakGlobal("Optical camera offline.");
         }
     }
 
@@ -784,6 +848,7 @@
     }
 
     function toggleVoiceCommandEngine() {
+        unlockSpeechEngineOnInteraction();
         if (!voiceRecognitionInstance) {
             voiceRecognitionInstance = initializeVoiceEngineSetup();
         }
