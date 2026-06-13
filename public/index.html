@@ -44,7 +44,6 @@
 
         footer { padding: 15px; text-align: center; border-top: 1px solid var(--border-dim); font-size: 0.6rem; color: var(--text-digital); }
         
-        /* Tactical Spectrum Visual Layer Support Filters */
         .map-filter-thermal { filter: invert(1) hue-rotate(180deg) saturate(2.5) contrast(1.5); }
         .map-filter-vector { filter: brightness(0.6) sepia(1) hue-rotate(100deg) saturate(3); }
 
@@ -96,13 +95,14 @@
             <p style="font-size: 0.65rem;">System Log Registers:</p>
             <div id="logArea" style="font-size: 0.55rem; color: var(--radar-green); margin-top: 5px; height: 110px; overflow-y: scroll; background:#000; padding:5px; border:1px solid rgba(0,255,102,0.15)">[LOG_STREAM_INITIALIZED]</div>
             <button class="btn-main" style="border-color:#ff0000; color:#ff0000;" onclick="emergencyWipe()">EMERGENCY SANITIZATION WIPE</button>
+            <button class="btn-main" style="border-color:var(--cyber-blue); color:var(--cyber-blue);" onclick="downloadForensicLogs()">EXPORT LOG DECK</button>
         </div>
     </section>
 
     <section id="about" style="display:none;" class="console">
         <h2 style="color:var(--radar-green); font-size: 0.9rem;">AEGISGRID HIGH-POWER ARTIFACT MANUAL</h2>
         <p style="font-size: 0.65rem; color: var(--text-digital); margin-top: 5px; line-height: 1.3;">
-            Version 4.0 integrates automated kinetic dead-reckoning models, hardware-throttled update loops, location-restricted cryptographic decoders, and multi-node path tracking grids.
+            Version 4.0 integrates automated kinetic dead-reckoning models, hardware-throttled update loops, location-restricted cryptographic decoders, voice cognition, optical captures, and multi-node path tracking grids.
         </p>
     </section>
 
@@ -134,6 +134,21 @@
                 <div class="data-point"><span>LOOP THROTTLE:</span><span id="throttleRateDisplay" style="color:var(--cyber-blue);">2000ms [MAX_FREQ]</span></div>
             </div>
 
+            <div class="widget" style="border-color: var(--threat-amber);">
+                <h4 style="font-size:0.55rem; color:var(--threat-amber); margin-bottom:5px;">FEED INTERCEPT // CAM CORE</h4>
+                <video id="tacticalCameraFeed" autoplay playsinline muted style="width:100%; height:130px; background:#000; border:1px solid rgba(255,170,0,0.3); object-fit: cover;"></video>
+                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                    <button class="btn-main" style="margin:0; padding:4px; border-color:var(--threat-amber); color:var(--threat-amber);" onclick="initializeTacticalCamera()">ENGAGE CAM</button>
+                    <button class="btn-main" style="margin:0; padding:4px; border-color:var(--threat-red); color:var(--threat-red);" onclick="killTacticalCamera()">KILL FEED</button>
+                </div>
+            </div>
+
+            <div class="widget" style="border-color: var(--radar-green);">
+                <h4 style="font-size:0.55rem; color:var(--radar-green); margin-bottom:5px;">VOICE CAPTURE COGNITION</h4>
+                <div id="voiceStatusDisplay" style="font-size: 0.6rem; color: var(--text-digital); margin-bottom: 5px;">AUDIO ENGINE: STANDBY</div>
+                <button class="btn-main" id="voiceListenBtn" style="border-color:var(--radar-green); color:var(--radar-green);" onclick="toggleVoiceCommandEngine()">INITIALIZE VOICE AUDIO</button>
+            </div>
+
             <div class="widget" style="border-color: var(--cyber-blue);">
                 <h4 style="font-size:0.55rem; color:var(--cyber-blue); margin-bottom:5px;">LOCATION-LOCKED CRYPTO DECODER</h4>
                 <input type="file" id="stegoLoader" accept="image/*" style="display:none;" onchange="encodeSecretDataIntoDecoyImage()">
@@ -163,7 +178,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-    // Core Engine Storage Structures
     let activeNodesMemoryObject = {};
     let kineticDriftPredictiveMarkers = {};
     let individualEntityFootprintBreadcrumbs = {};
@@ -185,7 +199,6 @@
     const FENCE_CENTER_LNG = 8.6753;
     const MAX_ALLOWED_RADIUS_METERS = 500000; 
 
-    // Instantiate Tactical Map Module
     let map = L.map('map', {tap: false, zoomControl: true}).setView([FENCE_CENTER_LAT, FENCE_CENTER_LNG], 6);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
@@ -193,7 +206,6 @@
         color: 'rgba(0, 255, 102, 0.3)', fillColor: 'transparent', dashArray: '6, 12', radius: MAX_ALLOWED_RADIUS_METERS
     }).addTo(map);
 
-    // Dynamic Map Click Event Registration (For Admin EW Jammer Placement)
     map.on('click', function(e) {
         if (jammerDeploymentModeActive) {
             const randomJammerId = "JAM-" + Math.floor(100 + Math.random() * 900);
@@ -206,7 +218,6 @@
         }
     });
 
-    // Supabase Cluster Connection Interfacing
     const SUPABASE_URL = "https://fmgjwxsdygcwxddvpchf.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtZ2p3eHNkeWdjd3hkZHZwY2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNTk3NjksImV4cCI6MjA5NjgzNTc2OX0.fgcojr3zEv4riwXmnKPDFSLElU7TaGJLAIr4uljRn_8";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -228,7 +239,6 @@
         }
     });
 
-    // Sub-System 6: Hardware-Aware Intelligent Telemetry Loop Control
     function queryDeviceDiagnosticsAndThrottleLoop() {
         document.getElementById('cpuCores').innerText = `${navigator.hardwareConcurrency || 'N/A'} HARDWARE CORES`;
         if (navigator.connection) {
@@ -241,7 +251,7 @@
                     document.getElementById('batteryDisplay').innerText = `${Math.round(battery.level * 100)}% ${battery.charging ? '[LINE_PWR]' : '[DISCHARGING]'}`;
                     
                     if (battery.level < 0.25 && !battery.charging) {
-                        standardUpdatePeriodMilliseconds = 25000; // Step down update frequency to safe cycle
+                        standardUpdatePeriodMilliseconds = 25000; 
                         document.getElementById('throttleRateDisplay').innerText = "25000ms [POWER_SAVER_THROTTLE]";
                         document.getElementById('throttleRateDisplay').style.color = "var(--threat-amber)";
                     } else {
@@ -288,7 +298,6 @@
                 }
             });
         }, (err) => { 
-            // Fallback to center tracking injection inside localized simulation parameters if browser denies hardware access
             const localFallbackHash = "AEG-LOCAL-NODE";
             channel.send({
                 type: 'broadcast', event: 'telemetry',
@@ -301,9 +310,7 @@
         });
     }
 
-    // Core Stream Parser Hub
     function handleIncomingNode(data) {
-        // Sub-System 4: Electronic Warfare Real-Time Jamming Intercept Filter
         let signalIsCurrentlyJammed = false;
         activeJammingZoneCircles.forEach(jammer => {
             let spaceDistance = map.distance([data.lat, data.lng], jammer.getLatLng());
@@ -318,10 +325,9 @@
             if (window[`marker_${data.hash}`]) {
                 window[`marker_${data.hash}`].setOpacity(0.2);
             }
-            return; // Dropped packet frame array processing bypass
+            return; 
         }
 
-        // Cache historical telemetry timeline data points array to back-trace trajectory vectors
         if (!individualEntityFootprintBreadcrumbs[data.hash]) individualEntityFootprintBreadcrumbs[data.hash] = [];
         individualEntityFootprintBreadcrumbs[data.hash].push({ lat: data.lat, lng: data.lng, time: data.timestamp });
         
@@ -335,11 +341,10 @@
         
         document.getElementById('integrityHash').innerText = data.hash;
 
-        // Sub-System 7: Ambient Biometric Extreme Value Focus Automation
         let markerDisplayHexColor = data.isGhost ? 'var(--cyber-blue)' : 'var(--radar-green)';
         if (data.vitals && data.vitals.stress.includes("CRITICAL")) {
             markerDisplayHexColor = 'var(--threat-red)';
-            map.setView([data.lat, data.lng], 9); // Autonomously focus camera matrix onto stressed asset
+            map.setView([data.lat, data.lng], 9); 
             triggerAudioTone(880, 'sawtooth', 0.4);
         }
 
@@ -355,14 +360,12 @@
 
         window[`marker_${data.hash}`].bindPopup(`<b>NODE REG: ${data.hash.slice(0,10)}</b><br><button class='btn-main' style='padding:2px; font-size:0.55rem;' onclick='displayTargetBiometricHUD("${data.hash}")'>HOOK INTERCEPT</button>`);
 
-        // Sub-System 1: Geofence Breach Triggering Automated Intercept Routines
         if (data.breach) {
             document.getElementById('fenceStatus').innerText = "BREACH WARNING";
             document.getElementById('fenceStatus').style.color = "var(--threat-red)";
             calculateAutonomousInterceptVector(data);
         }
 
-        // Wipe downstream projected kinetic drift predictions once a legitimate hardware report registers
         if (kineticDriftPredictiveMarkers[data.hash]) {
             map.removeLayer(kineticDriftPredictiveMarkers[data.hash]);
             delete kineticDriftPredictiveMarkers[data.hash];
@@ -383,7 +386,6 @@
         document.getElementById('vitalStressValue').style.color = node.vitals.stress.includes("CRITICAL") ? 'var(--threat-red)' : 'var(--radar-green)';
     }
 
-    // Sub-System 1: Autonomous Geospatial Intercept Computing Vector Math Engine
     function calculateAutonomousInterceptVector(breachingNode) {
         let nearestIntercepterNode = null;
         let shortestCalculatedDistance = Infinity;
@@ -399,13 +401,12 @@
             }
         });
 
-        // Purge historical linear graphics elements
         laserTracerArcsArray.forEach(arc => map.removeLayer(arc));
         laserTracerArcsArray = [];
 
         if (nearestIntercepterNode) {
             const vectorCoordinatesLineArray = [[nearestIntercepterNode.lat, nearestIntercepterNode.lng], [breachingNode.lat, breachingNode.lng]];
-            const estimatedTimeInterceptMinutes = Math.round((shortestCalculatedDistance / 1000) / 0.8); // Assumed 80km/h sprint constants
+            const estimatedTimeInterceptMinutes = Math.round((shortestCalculatedDistance / 1000) / 0.8); 
 
             const interceptTracerVisualPath = L.polyline(vectorCoordinatesLineArray, {
                 color: 'var(--threat-red)', weight: 2, opacity: 0.8, className: 'animated-laser-arc-path'
@@ -418,7 +419,6 @@
         }
     }
 
-    // Sub-System 3: Decentralized Multi-Hop Mesh Network Relay Simulation Mapping Layer
     function renderGlobalNetworkMeshTopology() {
         meshRelayLinesArray.forEach(line => map.removeLayer(line));
         meshRelayLinesArray = [];
@@ -446,7 +446,6 @@
         }
     }
 
-    // Sub-System 1: Kinetic Dead-Reckoning Extrapolation Background Daemon
     function startDeadReckoningPredictiveDaemon() {
         setInterval(() => {
             const currentTimeStamp = new Date().getTime();
@@ -457,11 +456,9 @@
                 const lastKnownReportNode = telemetryPointsArray[telemetryPointsArray.length - 1];
                 const silentEllapsedTimeSeconds = (currentTimeStamp - lastKnownReportNode.time) / 1000;
 
-                // If an endpoint falls dead for longer than 6 seconds, extrapolate trajectory paths autonomously
                 if (silentEllapsedTimeSeconds > 6 && silentEllapsedTimeSeconds < 30) {
                     const priorKnownReportNode = telemetryPointsArray[telemetryPointsArray.length - 2];
                     
-                    // Simple difference calculations to parse trajectory speeds
                     const latDeltaVelocityFactor = (lastKnownReportNode.lat - priorKnownReportNode.lat) / ((lastKnownReportNode.time - priorKnownReportNode.time) || 1);
                     const lngDeltaVelocityFactor = (lastKnownReportNode.lng - priorKnownReportNode.lng) / ((lastKnownReportNode.time - priorKnownReportNode.time) || 1);
                     
@@ -484,7 +481,6 @@
         }, 3000);
     }
 
-    // Sub-System 4: Electronic Warfare Active Jamming Circle Render Handler
     function toggleAdminJammerDeploymentMode() {
         jammerDeploymentModeActive = true;
         alert("ELECTRONIC WARFARE INTERCEPT MODE READY: Click coordinates anywhere on the master map layout grid to drop an EW jamming shield field.");
@@ -500,7 +496,6 @@
         document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [SIG-INT] ELECTRONIC WARFARE JAMMER BLANKET INSTANTIATED AT REFMESH ${data.id}</span>`;
     }
 
-    // Sub-System 5: Geographic Proximity Constrained Cipher Matrix Payload Handler
     function deployCryptographicDeadDropTarget() {
         const centerRefCoord = map.getCenter();
         channel.send({
@@ -525,7 +520,7 @@
 
         const reader = new FileReader();
         reader.onload = function(e) {
-            internalCarrierStegoBytes = e.target.result; // Emulate file tracking byte allocations inside variables storage
+            internalCarrierStegoBytes = e.target.result; 
             const canvas = document.getElementById('stegoPreviewCanvas');
             canvas.style.display = "block";
             const ctx = canvas.getContext('2d');
@@ -542,7 +537,6 @@
             alert("No data payload signature allocated inside system caches."); return;
         }
 
-        // Search if tracking client resides in immediate geographic proximity of active drops arrays
         navigator.geolocation.getCurrentPosition((pos) => {
             let localizedOperatorProximityCleared = false;
             
@@ -550,7 +544,7 @@
                 let dropInstance = cryptographicDeadDropsRegister[id];
                 let checkRadiusSeparation = map.distance([pos.coords.latitude, pos.coords.longitude], [dropInstance.lat, dropInstance.lng]);
                 
-                if (checkRadiusSeparation < 50000) { // Distance thresholds limits passed (50km matching bounding constraints)
+                if (checkRadiusSeparation < 50000) { 
                     localizedOperatorProximityCleared = true;
                 }
             });
@@ -563,16 +557,14 @@
                 document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [SECURITY FAILURE] DECRYPTION ATTEMPT OUTSIDE ZONE CONSTANTS BLOCKED</span>`;
             }
         }, (err) => {
-            // Emulate proximity execution verification baseline clearance within default simulation modes
             document.getElementById('logArea').innerHTML += `<br><span style='color:var(--cyber-blue)'>> [DEV COMPLIANCE] BYPASSING HARDWARE GEOLOCATION ACCESS CHECKS... PROXIMITY CONFIRMED</span>`;
             speakGlobal("Classified data blocks extracted.");
         });
     }
 
-    // Sub-System 8: Multi-Spectrum Analytical Mapping Display Controls
     function applySpectrumFilter(filterStyleModeKey) {
         const containerElementMapLayer = document.getElementById('map');
-        containerElementMapLayer.className = ""; // Wipe historical visual tracking layouts references class designations
+        containerElementMapLayer.className = ""; 
         
         if (filterStyleModeKey === 'thermal') {
             containerElementMapLayer.classList.add('map-filter-thermal');
@@ -585,7 +577,6 @@
         }
     }
 
-    // Sub-System 9: Advanced Administrative Short-String Scripting Macro Interpreter Engine Terminal
     function handleTerminalCliKey(event) {
         if (event.key === 'Enter') {
             const entryFieldInput = document.getElementById('cliInput');
@@ -606,7 +597,6 @@
         }
     }
 
-    // Standard Client UI Layout Managers Handlers
     function toggleSyntheticGhostPopulator() {
         if (syntheticHumanLoopTimer) {
             clearInterval(syntheticHumanLoopTimer); syntheticHumanLoopTimer = null;
@@ -693,6 +683,15 @@
         }
     }
 
+    function downloadForensicLogs() {
+        const logContent = document.getElementById('logArea').innerText;
+        const blob = new Blob([logContent], { type: "text/plain" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "AegisGrid_Forensic_v4.txt";
+        a.click();
+    }
+
     function showSection(id) {
         document.getElementById('dashboard').style.display = (id === 'dashboard') ? 'block' : 'none';
         document.getElementById('admin').style.display = (id === 'admin') ? 'block' : 'none';
@@ -710,6 +709,123 @@
             if (data && data.authorized) { showSection('admin'); speakGlobal("Access granted. Welcome back, Architect."); }
             else { alert("ACCESS SYSTEM VIOLATION REJECTED."); }
         } catch (err) { console.error("Server synchronization mismatch."); }
+    }
+
+    // ==========================================
+    // INTEGRATED OPTICAL FEED & VOICE COGNITION LAYERS
+    // ==========================================
+    let cameraMediaStreamInstance = null;
+
+    async function initializeTacticalCamera() {
+        const videoElement = document.getElementById('tacticalCameraFeed');
+        try {
+            cameraMediaStreamInstance = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, 
+                audio: false 
+            });
+            videoElement.srcObject = cameraMediaStreamInstance;
+            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-amber)'>> [CAM] LOCAL VIDEO OPTICS LINKED SUCCESSFUL</span>`;
+            triggerAudioTone(700, 'sine', 0.1);
+        } catch (err) {
+            alert("CAMERA ERROR: Peripheral access blocked or missing.");
+            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [CAM] HARDWARE ERROR: CAPTURE DENIED</span>`;
+        }
+    }
+
+    function killTacticalCamera() {
+        const videoElement = document.getElementById('tacticalCameraFeed');
+        if (cameraMediaStreamInstance) {
+            cameraMediaStreamInstance.getTracks().forEach(track => track.stop());
+            videoElement.srcObject = null;
+            cameraMediaStreamInstance = null;
+            document.getElementById('logArea').innerHTML += `<br>> [CAM] OPTICAL FEED DISCONNECTED BY OPERATOR`;
+        }
+    }
+
+    let voiceRecognitionInstance = null;
+    let voiceIsListeningState = false;
+
+    function initializeVoiceEngineSetup() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            document.getElementById('voiceStatusDisplay').innerText = "SPEECH API REJECTED BY BROWSER";
+            return null;
+        }
+        
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+            voiceIsListeningState = true;
+            document.getElementById('voiceStatusDisplay').innerText = "SYSTEM LISTENING... SPEAK NOW";
+            document.getElementById('voiceStatusDisplay').style.color = "var(--threat-red)";
+            document.getElementById('voiceListenBtn').innerText = "HALT AUDIO CAPTURE";
+        };
+
+        recognition.onresult = (event) => {
+            const spokenPhraseText = event.results[0][0].transcript.trim().toLowerCase();
+            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--cyber-blue)'>> [VOICE COGNITION]: "${spokenPhraseText}"</span>`;
+            processVoiceCommandMacros(spokenPhraseText);
+        };
+
+        recognition.onerror = () => {
+            document.getElementById('voiceStatusDisplay').innerText = "AUDIO ERROR: TRY AGAIN";
+            stopVoiceListeningState();
+        };
+
+        recognition.onend = () => {
+            stopVoiceListeningState();
+        };
+
+        return recognition;
+    }
+
+    function toggleVoiceCommandEngine() {
+        if (!voiceRecognitionInstance) {
+            voiceRecognitionInstance = initializeVoiceEngineSetup();
+        }
+        
+        if (!voiceRecognitionInstance) return;
+
+        if (!voiceIsListeningState) {
+            try { voiceRecognitionInstance.start(); } catch(e) {}
+        } else {
+            voiceRecognitionInstance.stop();
+        }
+    }
+
+    function stopVoiceListeningState() {
+        voiceIsListeningState = false;
+        document.getElementById('voiceStatusDisplay').innerText = "AUDIO ENGINE: STANDBY";
+        document.getElementById('voiceStatusDisplay').style.color = "var(--text-digital)";
+        document.getElementById('voiceListenBtn').innerText = "INITIALIZE VOICE AUDIO";
+    }
+
+    function processVoiceCommandMacros(phrase) {
+        if (phrase.includes("lockdown") || phrase.includes("alarm red")) {
+            broadcastSystemStatus('RED');
+            executeLocalStatusChange('RED');
+            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [VOICE MACRO] TRIGGERED SYSTEM-WIDE LOCKDOWN</span>`;
+            speakGlobal("Voice authentication accepted. Activating perimeter grid lockdown.");
+        } 
+        else if (phrase.includes("clear") || phrase.includes("status green")) {
+            broadcastSystemStatus('GREEN');
+            executeLocalStatusChange('GREEN');
+            speakGlobal("Grid status restored to nominal conditions.");
+        } 
+        else if (phrase.includes("ghost") || phrase.includes("simulator")) {
+            toggleSyntheticGhostPopulator();
+        } 
+        else if (phrase.includes("ping") || phrase.includes("hardware")) {
+            queryDeviceDiagnosticsAndThrottleLoop();
+            speakGlobal("Diagnostics refreshed.");
+        } 
+        else {
+            speakGlobal("Command syntax unrecognized.");
+        }
     }
 </script>
 </body>
