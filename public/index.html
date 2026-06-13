@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AEGISGRID // ULTRA COMMAND MASTER CORE v4.1</title>
+    <title>AEGISGRID // ULTRA COMMAND MASTER CORE v4.2</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root { 
@@ -72,7 +72,7 @@
 <body>
 
 <header id="mainHeader">
-    <div class="brand"><h1>AEGISGRID // ENGINE v4.1 MASTER SYSTEM</h1></div>
+    <div class="brand"><h1>AEGISGRID // ENGINE v4.2 MASTER SYSTEM</h1></div>
     <div style="font-size: 0.7rem;">SYSTEM PROTOCOL: <span id="aiStatus" style="color:var(--radar-green)">SYNCHRONIZING MESH...</span></div>
 </header>
 
@@ -118,7 +118,7 @@
     <section id="about" style="display:none;" class="console">
         <h2 style="color:var(--radar-green); font-size: 0.9rem;">AEGISGRID HIGH-POWER ARTIFACT MANUAL // BY TIMMYDON</h2>
         <p style="font-size: 0.65rem; color: var(--text-digital); margin-top: 5px; line-height: 1.3;">
-            Version 4.1 integrates automated connection tracking checks to eliminate dynamic cascade loop echo anomalies on concurrent WebRTC channels. Master system optimization engineered by TIMMYDON.
+            Version 4.2 secures telemetry pipelines and locks down device node identity inside persistent local memory structures. Optimized tracking systems engineered by TIMMYDON.
         </p>
     </section>
 
@@ -207,12 +207,23 @@
     </aside>
 </main>
 
-<footer>&copy; 2026 AEGISGRID DEFENSIVE SYSTEMS. OPERATIONAL MASTER CORE. AUTHOR: TIMMY DON.</footer>
+<footer>&copy; 2026 AEGISGRID DEFENSIVE SYSTEMS. OPERATIONAL MASTER CORE. AUTHOR: TIMMYDON.</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+    // ==========================================
+    // PERSISTENT MACHINE IDENTITY CONFIGURATION
+    // ==========================================
+    // Check if a permanent identity already exists inside localStorage; if not, generate a static one.
+    if (!localStorage.getItem('aegis_device_core_hash')) {
+        var uniquelyGeneratedHash = "AEG-CORE-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+        localStorage.setItem('aegis_device_core_hash', uniquelyGeneratedHash);
+    }
+    var MASTER_DEVICE_IDENTITY_HASH = localStorage.getItem('aegis_device_core_hash');
+    document.getElementById('integrityHash').innerText = MASTER_DEVICE_IDENTITY_HASH;
+
     var activeNodesMemoryObject = {};
     var kineticDriftPredictiveMarkers = {};
     var individualEntityFootprintBreadcrumbs = {};
@@ -286,8 +297,8 @@
     .on('broadcast', { event: 'deploy_deaddrop_packet' }, function(payload) { renderCryptographicDeadDropMarker(payload.payload); })
     .subscribe(function(status) {
         if (status === 'SUBSCRIBED') {
-            document.getElementById('aiStatus').innerText = "ONLINE // CORE v4.1 ACTIVE";
-            speakGlobal("Aegis control architecture optimized to engine version 4.1 successfully.");
+            document.getElementById('aiStatus').innerText = "ONLINE // CORE v4.2 ACTIVE";
+            speakGlobal("Aegis control architecture optimized to engine version 4.2 successfully.");
             queryDeviceDiagnosticsAndThrottleLoop();
             startDeadReckoningPredictiveDaemon();
         }
@@ -301,7 +312,7 @@
         selector.innerHTML = '<option value="ALL_NODES">-- BROADCAST TO ALL (CONFERENCE MESH) --</option>';
         
         Object.keys(activeNodesMemoryObject).forEach(function(nodeId) {
-            if (nodeId !== document.getElementById('integrityHash').innerText) {
+            if (nodeId !== MASTER_DEVICE_IDENTITY_HASH) {
                 var opt = document.createElement('option');
                 opt.value = nodeId;
                 opt.innerText = "DIRECT CALL: [" + nodeId.substring(0, 8) + "]";
@@ -348,7 +359,7 @@
     function resetTelemetryIntervalLoop() {
         if (dynamicTransmissionIntervalLoop) clearInterval(dynamicTransmissionIntervalLoop);
         dynamicTransmissionIntervalLoop = setInterval(function() {
-            if (knownNodes.size > 0 && activeNodesMemoryObject[document.getElementById('integrityHash').innerText]) {
+            if (knownNodes.size > 0 && activeNodesMemoryObject[MASTER_DEVICE_IDENTITY_HASH]) {
                 transmitData(); 
             }
         }, standardUpdatePeriodMilliseconds);
@@ -358,7 +369,6 @@
         navigator.geolocation.getCurrentPosition(function(pos) {
             var rawLat = pos.coords.latitude;
             var rawLng = pos.coords.longitude;
-            var simulatedHash = "AEG-CORE-" + Math.random().toString(36).substring(2, 6).toUpperCase();
             
             var distanceMetres = map.distance([rawLat, rawLng], [FENCE_CENTER_LAT, FENCE_CENTER_LNG]);
             var breachActive = distanceMetres > MAX_ALLOWED_RADIUS_METERS;
@@ -366,17 +376,16 @@
             channel.send({
                 type: 'broadcast', event: 'telemetry',
                 payload: {
-                    lat: rawLat, lng: rawLng, hash: simulatedHash, 
+                    lat: rawLat, lng: rawLng, hash: MASTER_DEVICE_IDENTITY_HASH, 
                     breach: breachActive, timestamp: new Date().getTime(), isGhost: false,
                     vitals: { hr: Math.floor(72 + Math.random() * 15), temp: (36.6 + Math.random() * 0.2).toFixed(1), stress: "NOMINAL" }
                 }
             });
         }, function(err) { 
-            var localFallbackHash = "AEG-LOCAL-NODE";
             channel.send({
                 type: 'broadcast', event: 'telemetry',
                 payload: {
-                    lat: FENCE_CENTER_LAT + 0.05, lng: FENCE_CENTER_LNG - 0.04, hash: localFallbackHash,
+                    lat: FENCE_CENTER_LAT + 0.05, lng: FENCE_CENTER_LNG - 0.04, hash: MASTER_DEVICE_IDENTITY_HASH,
                     breach: false, timestamp: new Date().getTime(), isGhost: false,
                     vitals: { hr: 75, temp: "36.6", stress: "NOMINAL" }
                 }
@@ -413,8 +422,6 @@
             document.getElementById('logArea').innerHTML += "<br>> MESH LINK COMPLETED: " + data.hash;
             speakGlobal("New node structure attached to grid network.");
         }
-        
-        document.getElementById('integrityHash').innerText = data.hash;
 
         var markerDisplayHexColor = data.isGhost ? 'var(--cyber-blue)' : 'var(--radar-green)';
         if (data.vitals && data.vitals.stress.includes("CRITICAL")) {
@@ -729,16 +736,32 @@
     }
 
     function handleChatKey(e) { if(e.key === 'Enter') sendSecureChatMessage(); }
+    
+    // ==========================================
+    // FIXED IDENTITY SECURE CHAT PIPELINE
+    // ==========================================
     function sendSecureChatMessage() {
         unlockSpeechEngineOnInteraction();
-        var input = document.getElementById('chatInput'); if (!input.value.trim()) return;
-        channel.send({ type: 'broadcast', event: 'secure_chat', payload: { message: input.value.trim(), id: "NODE_" + Math.random().toString(36).substring(2, 5).toUpperCase() } });
+        var input = document.getElementById('chatInput'); 
+        if (!input.value.trim()) return;
+        
+        // Pass the device's true master hash instead of spinning up a random string
+        channel.send({ 
+            type: 'broadcast', 
+            event: 'secure_chat', 
+            payload: { 
+                message: input.value.trim(), 
+                id: MASTER_DEVICE_IDENTITY_HASH 
+            } 
+        });
         input.value = '';
     }
 
     function appendChatMessage(data) {
         var msgArea = document.getElementById('chatMessages');
-        msgArea.innerHTML += "<div><span style=\"color:var(--radar-green)\">[" + data.id + "]:</span> " + data.message + "</div>";
+        // Slice output string slightly to keep UI scannability smooth
+        var formattedId = data.id.substring(0, 12);
+        msgArea.innerHTML += "<div><span style=\"color:var(--radar-green)\">[" + formattedId + "]:</span> " + data.message + "</div>";
         msgArea.scrollTop = msgArea.scrollHeight;
         triggerAudioTone(900, 'sine', 0.04);
         speakGlobal("Incoming data translation packet from channel node.");
@@ -783,6 +806,7 @@
             document.getElementById('logArea').innerHTML = "[SYSTEM_WIPED_CLEAN]";
             knownNodes.clear(); activeNodesMemoryObject = {}; individualEntityFootprintBreadcrumbs = {};
             document.getElementById('nodeCount').innerText = "0";
+            localStorage.removeItem('aegis_device_core_hash'); // Reset the persistent name key
             speakGlobal("Data tracks vaporized. Operational terminal connection dropped.");
             broadcastSystemStatus('RED');
         }
@@ -802,8 +826,7 @@
         unlockSpeechEngineOnInteraction();
         document.getElementById('dashboard').style.display = (id === 'dashboard') ? 'block' : 'none';
         document.getElementById('admin').style.display = (id === 'admin') ? 'block' : 'none';
-        document.getElementById('about').style.display = (id === 'about') ? 'block' : 'none';
-        document.getElementById('sidebar').style.display = (id === 'admin') ? 'none' : 'block';
+        document.getElementById('about').style.display = (id === 'about') ? 'none' : 'block';
     }
 
     async function requestAdminAccess() {
@@ -831,17 +854,13 @@
 
     channel.on('broadcast', { event: 'rtc_signal_packet' }, async function(payload) {
         var packet = payload.payload;
-        var myUID = document.getElementById('integrityHash').innerText;
 
-        if (packet.sender === myUID) return;
-        if (packet.routingMode === 'DIRECT' && packet.targetDestination !== myUID) return;
+        if (packet.sender === MASTER_DEVICE_IDENTITY_HASH) return;
+        if (packet.routingMode === 'DIRECT' && packet.targetDestination !== MASTER_DEVICE_IDENTITY_HASH) return;
 
         try {
             if (packet.sdp) {
-                // Safeguard 1: Do not re-instantiate connection if it already exists during signaling
-                if (meshPeerConnectionsMap[packet.sender]) {
-                    return;
-                }
+                if (meshPeerConnectionsMap[packet.sender]) return;
                 
                 setupIndividualPeerConnection(packet.sender, packet.routingMode);
                 await meshPeerConnectionsMap[packet.sender].setRemoteDescription(new RTCSessionDescription(packet.sdp));
@@ -859,7 +878,7 @@
                         type: 'broadcast', event: 'rtc_signal_packet',
                         payload: {
                             sdp: meshPeerConnectionsMap[packet.sender].localDescription,
-                            sender: myUID,
+                            sender: MASTER_DEVICE_IDENTITY_HASH,
                             targetDestination: packet.sender,
                             routingMode: packet.routingMode
                         }
@@ -878,7 +897,6 @@
     });
 
     function setupIndividualPeerConnection(remoteOperatorUID, currentRoutingMode) {
-        // Safeguard 2: Critical short-circuit rule to prevent duplicated ghost streams
         if (meshPeerConnectionsMap[remoteOperatorUID]) return;
 
         var pc = new RTCPeerConnection(rtcIceConfig);
@@ -890,7 +908,7 @@
                     type: 'broadcast', event: 'rtc_signal_packet',
                     payload: {
                         candidate: event.candidate,
-                        sender: document.getElementById('integrityHash').innerText,
+                        sender: MASTER_DEVICE_IDENTITY_HASH,
                         targetDestination: remoteOperatorUID,
                         routingMode: currentRoutingMode
                     }
@@ -958,7 +976,6 @@
         }
 
         var callTargetMode = document.getElementById('callTargetSelector').value;
-        var myUID = document.getElementById('integrityHash').innerText;
         
         if (callTargetMode === "ALL_NODES") {
             document.getElementById('callModeIndicator').innerText = "CONF_MESH";
@@ -967,8 +984,7 @@
             document.getElementById('logArea').innerHTML += "<br>> [NET_OPTICS] BROADCASTING CONFERENCE MESH CONNECTIONS SIGNATURES...";
             
             Object.keys(activeNodesMemoryObject).forEach(async function(targetOperatorID) {
-                if (targetOperatorID !== myUID) {
-                    // Safeguard 3: Prevent outbound calls from duplicating existing active mesh paths
+                if (targetOperatorID !== MASTER_DEVICE_IDENTITY_HASH) {
                     if (meshPeerConnectionsMap[targetOperatorID]) return;
 
                     setupIndividualPeerConnection(targetOperatorID, 'CONFERENCE');
@@ -980,14 +996,14 @@
                     
                     channel.send({
                         type: 'broadcast', event: 'rtc_signal_packet',
-                        payload: { sdp: meshPeerConnectionsMap[targetOperatorID].localDescription, sender: myUID, routingMode: 'CONFERENCE' }
+                        payload: { sdp: meshPeerConnectionsMap[targetOperatorID].localDescription, sender: MASTER_DEVICE_IDENTITY_HASH, routingMode: 'CONFERENCE' }
                     });
                 }
             });
             speakGlobal("Broadcasting structural conference handshake vectors.");
         } else {
             var targetID = callTargetMode;
-            if (meshPeerConnectionsMap[targetID]) return; // Safeguard 4
+            if (meshPeerConnectionsMap[targetID]) return;
 
             document.getElementById('callModeIndicator').innerText = "DIRECT_CALL";
             document.getElementById('callModeIndicator').style.color = "var(--cyber-blue)";
@@ -1005,7 +1021,7 @@
                 type: 'broadcast', event: 'rtc_signal_packet',
                 payload: { 
                     sdp: meshPeerConnectionsMap[targetID].localDescription, 
-                    sender: myUID, 
+                    sender: MASTER_DEVICE_IDENTITY_HASH, 
                     targetDestination: targetID, 
                     routingMode: 'DIRECT' 
                 }
@@ -1015,9 +1031,9 @@
     }
 
     function purgeRemoteStreamElement(operatorUID) {
-        if (meshPeerConnectionsMap[operatorUID]) {
-            meshPeerConnectionsMap[operatorUID].close();
-            delete meshPeerConnectionsMap[operatorUID];
+        if (meshPeerConnectionsMap[remoteOperatorUID]) {
+            meshPeerConnectionsMap[remoteOperatorUID].close();
+            delete meshPeerConnectionsMap[remoteOperatorUID];
         }
         var wrapper = document.getElementById("wrapper_" + operatorUID);
         if (wrapper) {
@@ -1031,11 +1047,10 @@
     function killTacticalCamera() {
         unlockSpeechEngineOnInteraction();
         var localVideo = document.getElementById('tacticalCameraFeed');
-        var myUID = document.getElementById('integrityHash').innerText;
         
         channel.send({
             type: 'broadcast', event: 'rtc_signal_packet',
-            payload: { signalAction: 'TERMINATE_SIGNAL_LINK', sender: myUID }
+            payload: { signalAction: 'TERMINATE_SIGNAL_LINK', sender: MASTER_DEVICE_IDENTITY_HASH }
         });
 
         if (cameraMediaStreamInstance) {
