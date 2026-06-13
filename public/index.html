@@ -117,7 +117,7 @@
                 <div class="data-point" style="font-size:0.6rem; color: var(--cyber-blue);"><span>STRESS INDEX:</span><span id="vitalStressValue">--</span></div>
             </div>
 
-            <div class="widget" id="localDeviceDiagnosticsDeck" style="margin-top: 0;">
+            <div class="widget" style="margin-top: 0;">
                 <h4 style="font-size:0.55rem; color:var(--radar-green); margin-bottom:5px;">LOCAL DEVICE DIAGNOSTICS</h4>
                 <div class="data-point" style="font-size:0.6rem;"><span>NET CORES:</span><span id="cpuCores">--</span></div>
                 <div class="data-point" style="font-size:0.6rem;"><span>NET SPEED:</span><span id="netSpeed">--</span></div>
@@ -187,9 +187,9 @@
         radius: MAX_ALLOWED_RADIUS_METERS
     }).addTo(map);
 
-    // Optimized for variable orchestration upon global hosting platforms
-    const SUPABASE_URL = window.ENV_SUPABASE_URL || "https://gxsfofwshgscfbypswqq.supabase.co"; 
-    const SUPABASE_KEY = window.ENV_SUPABASE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4c2ZvZndzaGdzY2ZieXBzd3FxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTgzNjU1NDIsImV4cCI6MjAzMzk0MTU0Mn0.7e_lZWhv680y93p7KymB1PZIn-LNoXW5P-j8_lq3xIE";
+    // Linked directly to your unique project cluster API gateway
+    const SUPABASE_URL = "https://fmgjwxsdygcwxddvpchf.supabase.co"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtZ2p3eHNkeWdjd3hkZHZwY2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNTk3NjksImV4cCI6MjA5NjgzNTc2OX0.fgcojr3zEv4riwXmnKPDFSLElU7TaGJLAIr4uljRn_8";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
     const channel = supabaseClient.channel('aegis_master_swarm', {
