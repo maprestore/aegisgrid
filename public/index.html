@@ -50,7 +50,6 @@
         .animated-laser-arc-path { stroke-dasharray: 6, 18; animation: laserArcSprintingFlow 1s linear infinite; }
         @keyframes laserArcSprintingFlow { to { stroke-dashoffset: -24; } }
         
-        /* Dynamic Dual-Column Responsive Grid Module for Large Screen Environments */
         @media (min-width: 769px) {
             main { 
                 grid-template-columns: 1fr 360px; 
@@ -222,47 +221,47 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-    let activeNodesMemoryObject = {};
-    let kineticDriftPredictiveMarkers = {};
-    let individualEntityFootprintBreadcrumbs = {};
-    let laserTracerArcsArray = [];
-    let meshRelayLinesArray = [];
-    let activeJammingZoneCircles = [];
-    let cryptographicDeadDropsRegister = {};
+    var activeNodesMemoryObject = {};
+    var kineticDriftPredictiveMarkers = {};
+    var individualEntityFootprintBreadcrumbs = {};
+    var laserTracerArcsArray = [];
+    var meshRelayLinesArray = [];
+    var activeJammingZoneCircles = [];
+    var cryptographicDeadDropsRegister = {};
     
-    let knownNodes = new Set();
-    let audioCtx = null;
-    let alarmInterval = null;
-    let syntheticHumanLoopTimer = null;
-    let internalCarrierStegoBytes = null;
-    let jammerDeploymentModeActive = false;
-    let dynamicTransmissionIntervalLoop = null;
-    let standardUpdatePeriodMilliseconds = 2000;
+    var knownNodes = new Set();
+    var audioCtx = null;
+    var alarmInterval = null;
+    var syntheticHumanLoopTimer = null;
+    var internalCarrierStegoBytes = null;
+    var jammerDeploymentModeActive = false;
+    var dynamicTransmissionIntervalLoop = null;
+    var standardUpdatePeriodMilliseconds = 2000;
 
-    let deviceHasBeenInteractedWith = false;
-    let queuedSpeechAlertPhrasesArray = [];
+    var deviceHasBeenInteractedWith = false;
+    var queuedSpeechAlertPhrasesArray = [];
 
-    const FENCE_CENTER_LAT = 9.0820;
-    const FENCE_CENTER_LNG = 8.6753;
-    const MAX_ALLOWED_RADIUS_METERS = 500000; 
+    var FENCE_CENTER_LAT = 9.0820;
+    var FENCE_CENTER_LNG = 8.6753;
+    var MAX_ALLOWED_RADIUS_METERS = 500000; 
 
-    let map = L.map('map', {tap: false, zoomControl: true}).setView([FENCE_CENTER_LAT, FENCE_CENTER_LNG], 6);
+    var map = L.map('map', {tap: false, zoomControl: true}).setView([FENCE_CENTER_LAT, FENCE_CENTER_LNG], 6);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
-    let safePerimeterCircle = L.circle([FENCE_CENTER_LAT, FENCE_CENTER_LNG], {
+    var safePerimeterCircle = L.circle([FENCE_CENTER_LAT, FENCE_CENTER_LNG], {
         color: 'rgba(0, 255, 102, 0.3)', fillColor: 'transparent', dashArray: '6, 12', radius: MAX_ALLOWED_RADIUS_METERS
     }).addTo(map);
 
     map.on('click', function(e) {
         unlockSpeechEngineOnInteraction();
         if (jammerDeploymentModeActive) {
-            const randomJammerId = "JAM-" + Math.floor(100 + Math.random() * 900);
+            var randomJammerId = "JAM-" + Math.floor(100 + Math.random() * 900);
             channel.send({
                 type: 'broadcast', event: 'deploy_jammer_packet',
                 payload: { lat: e.latlng.lat, lng: e.latlng.lng, radius: 120000, id: randomJammerId }
             });
             jammerDeploymentModeActive = false;
-            document.getElementById('logArea').innerHTML += `<br>> Signals Jamming deployment request transmitted.`;
+            document.getElementById('logArea').innerHTML += "<br>> Signals Jamming deployment request transmitted.";
         }
     });
 
@@ -275,25 +274,25 @@
                 window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
             }
             while (queuedSpeechAlertPhrasesArray.length > 0) {
-                let nextPhraseText = queuedSpeechAlertPhrasesArray.shift();
+                var nextPhraseText = queuedSpeechAlertPhrasesArray.shift();
                 speakGlobal(nextPhraseText);
             }
         }
     }
 
-    const SUPABASE_URL = "https://fmgjwxsdygcwxddvpchf.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtZ2p3eHNkeWdjd3hkZHZwY2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNTk3NjksImV4cCI6MjA5NjgzNTc2OX0.fgcojr3zEv4riwXmnKPDFSLElU7TaGJLAIr4uljRn_8";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    var SUPABASE_URL = "https://fmgjwxsdygcwxddvpchf.supabase.co"; 
+    var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtZ2p3eHNkeWdjd3hkZHZwY2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNTk3NjksImV4cCI6MjA5NjgzNTc2OX0.fgcojr3zEv4riwXmnKPDFSLElU7TaGJLAIr4uljRn_8";
+    var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
-    const channel = supabaseClient.channel('aegis_master_swarm', { config: { broadcast: { self: true } } });
+    var channel = supabaseClient.channel('aegis_master_swarm', { config: { broadcast: { self: true } } });
 
     channel
-    .on('broadcast', { event: 'telemetry' }, (payload) => handleIncomingNode(payload.payload))
-    .on('broadcast', { event: 'status_override' }, (payload) => executeLocalStatusChange(payload.payload.status))
-    .on('broadcast', { event: 'secure_chat' }, (payload) => appendChatMessage(payload.payload))
-    .on('broadcast', { event: 'deploy_jammer_packet' }, (payload) => renderElectronicWarfareZone(payload.payload))
-    .on('broadcast', { event: 'deploy_deaddrop_packet' }, (payload) => renderCryptographicDeadDropMarker(payload.payload))
-    .subscribe((status) => {
+    .on('broadcast', { event: 'telemetry' }, function(payload) { handleIncomingNode(payload.payload); })
+    .on('broadcast', { event: 'status_override' }, function(payload) { executeLocalStatusChange(payload.payload.status); })
+    .on('broadcast', { event: 'secure_chat' }, function(payload) { appendChatMessage(payload.payload); })
+    .on('broadcast', { event: 'deploy_jammer_packet' }, function(payload) { renderElectronicWarfareZone(payload.payload); })
+    .on('broadcast', { event: 'deploy_deaddrop_packet' }, function(payload) { renderCryptographicDeadDropMarker(payload.payload); })
+    .subscribe(function(status) {
         if (status === 'SUBSCRIBED') {
             document.getElementById('aiStatus').innerText = "ONLINE // CORE v4 ACTIVE";
             speakGlobal("Aegis ultra command architecture upgraded to engine version 4 successfully.");
@@ -302,37 +301,36 @@
         }
     });
 
-    // Dynamic Tracking Roster Selector Loop for Targeted Video Routing
-    setInterval(() => {
-        const selector = document.getElementById('callTargetSelector');
+    setInterval(function() {
+        var selector = document.getElementById('callTargetSelector');
         if (!selector) return;
         
-        const preservedValue = selector.value;
+        var preservedValue = selector.value;
         selector.innerHTML = '<option value="ALL_NODES">-- BROADCAST TO ALL (CONFERENCE MESH) --</option>';
         
-        Object.keys(activeNodesMemoryObject).forEach(nodeId => {
+        Object.keys(activeNodesMemoryObject).forEach(function(nodeId) {
             if (nodeId !== document.getElementById('integrityHash').innerText) {
-                let opt = document.createElement('option');
+                var opt = document.createElement('option');
                 opt.value = nodeId;
-                opt.innerText = `DIRECT CALL: [${nodeId.substring(0, 8)}]`;
+                opt.innerText = "DIRECT CALL: [" + nodeId.substring(0, 8) + "]";
                 selector.appendChild(opt);
             }
         });
-        if ([...selector.options].some(o => o.value === preservedValue)) {
+        if ([...selector.options].some(function(o) { return o.value === preservedValue; })) {
             selector.value = preservedValue;
         }
     }, 3000);
 
     function queryDeviceDiagnosticsAndThrottleLoop() {
-        document.getElementById('cpuCores').innerText = `${navigator.hardwareConcurrency || 'N/A'} HARDWARE CORES`;
+        document.getElementById('cpuCores').innerText = (navigator.hardwareConcurrency || 'N/A') + " HARDWARE CORES";
         if (navigator.connection) {
-            document.getElementById('netSpeed').innerText = `${navigator.connection.downlink || 'N/A'} MBPS POOL`;
+            document.getElementById('netSpeed').innerText = (navigator.connection.downlink || 'N/A') + " MBPS POOL";
         }
         
         if (navigator.getBattery) {
-            navigator.getBattery().then(battery => {
-                const evaluatePowerThrottlingState = () => {
-                    document.getElementById('batteryDisplay').innerText = `${Math.round(battery.level * 100)}% ${battery.charging ? '[LINE_PWR]' : '[DISCHARGING]'}`;
+            navigator.getBattery().then(function(battery) {
+                var evaluatePowerThrottlingState = function() {
+                    document.getElementById('batteryDisplay').innerText = Math.round(battery.level * 100) + "% " + (battery.charging ? '[LINE_PWR]' : '[DISCHARGING]');
                     
                     if (battery.level < 0.25 && !battery.charging) {
                         standardUpdatePeriodMilliseconds = 25000; 
@@ -357,7 +355,7 @@
 
     function resetTelemetryIntervalLoop() {
         if (dynamicTransmissionIntervalLoop) clearInterval(dynamicTransmissionIntervalLoop);
-        dynamicTransmissionIntervalLoop = setInterval(() => {
+        dynamicTransmissionIntervalLoop = setInterval(function() {
             if (knownNodes.size > 0 && activeNodesMemoryObject[document.getElementById('integrityHash').innerText]) {
                 transmitData(); 
             }
@@ -365,13 +363,13 @@
     }
 
     function transmitData() {
-        navigator.geolocation.getCurrentPosition((pos) => {
-            const rawLat = pos.coords.latitude;
-            const rawLng = pos.coords.longitude;
-            const simulatedHash = "AEG-CORE-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            var rawLat = pos.coords.latitude;
+            var rawLng = pos.coords.longitude;
+            var simulatedHash = "AEG-CORE-" + Math.random().toString(36).substring(2, 6).toUpperCase();
             
-            const distanceMetres = map.distance([rawLat, rawLng], [FENCE_CENTER_LAT, FENCE_CENTER_LNG]);
-            const breachActive = distanceMetres > MAX_ALLOWED_RADIUS_METERS;
+            var distanceMetres = map.distance([rawLat, rawLng], [FENCE_CENTER_LAT, FENCE_CENTER_LNG]);
+            var breachActive = distanceMetres > MAX_ALLOWED_RADIUS_METERS;
 
             channel.send({
                 type: 'broadcast', event: 'telemetry',
@@ -381,8 +379,8 @@
                     vitals: { hr: Math.floor(72 + Math.random() * 15), temp: (36.6 + Math.random() * 0.2).toFixed(1), stress: "NOMINAL" }
                 }
             });
-        }, (err) => { 
-            const localFallbackHash = "AEG-LOCAL-NODE";
+        }, function(err) { 
+            var localFallbackHash = "AEG-LOCAL-NODE";
             channel.send({
                 type: 'broadcast', event: 'telemetry',
                 payload: {
@@ -395,19 +393,19 @@
     }
 
     function handleIncomingNode(data) {
-        let signalIsCurrentlyJammed = false;
-        activeJammingZoneCircles.forEach(jammer => {
-            let spaceDistance = map.distance([data.lat, data.lng], jammer.getLatLng());
+        var signalIsCurrentlyJammed = false;
+        activeJammingZoneCircles.forEach(function(jammer) {
+            var spaceDistance = map.distance([data.lat, data.lng], jammer.getLatLng());
             if (spaceDistance < jammer.getRadius()) {
                 signalIsCurrentlyJammed = true;
             }
         });
 
         if (signalIsCurrentlyJammed) {
-            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-amber)'>> [WARN] PACKET FROM ${data.hash.slice(0,8)} STRIPPED BY ADMIN EW FIELD</span>`;
+            document.getElementById('logArea').innerHTML += "<br><span style='color:var(--threat-amber)'>> [WARN] PACKET FROM " + data.hash.slice(0,8) + " STRIPPED BY ADMIN EW FIELD</span>";
             data.vitals = { hr: "--", temp: "--", stress: "SIGNAL_LOST [EW_JAM]" };
-            if (window[`marker_${data.hash}`]) {
-                window[`marker_${data.hash}`].setOpacity(0.2);
+            if (window["marker_" + data.hash]) {
+                window["marker_" + data.hash].setOpacity(0.2);
             }
             return; 
         }
@@ -420,13 +418,13 @@
         if (!knownNodes.has(data.hash)) {
             knownNodes.add(data.hash);
             document.getElementById('nodeCount').innerText = knownNodes.size;
-            document.getElementById('logArea').innerHTML += `<br>> MESH LINK COMPLETED: ${data.hash}`;
+            document.getElementById('logArea').innerHTML += "<br>> MESH LINK COMPLETED: " + data.hash;
             speakGlobal("New node structure attached to grid network.");
         }
         
         document.getElementById('integrityHash').innerText = data.hash;
 
-        let markerDisplayHexColor = data.isGhost ? 'var(--cyber-blue)' : 'var(--radar-green)';
+        var markerDisplayHexColor = data.isGhost ? 'var(--cyber-blue)' : 'var(--radar-green)';
         if (data.vitals && data.vitals.stress.includes("CRITICAL")) {
             markerDisplayHexColor = 'var(--threat-red)';
             map.setView([data.lat, data.lng], 9); 
@@ -434,17 +432,17 @@
             speakGlobal("Alert! Critical stress markers detected on incoming cluster frame.");
         }
 
-        const divMarkerMarkup = `<div style="background:${markerDisplayHexColor}; width:14px; height:14px; border-radius:50%; box-shadow:0 0 12px ${markerDisplayHexColor}; border:2px solid black;"></div>`;
+        var divMarkerMarkup = '<div style="background:' + markerDisplayHexColor + '; width:14px; height:14px; border-radius:50%; box-shadow:0 0 12px ' + markerDisplayHexColor + '; border:2px solid black;"></div>';
         
-        if (window[`marker_${data.hash}`]) {
-            window[`marker_${data.hash}`].setLatLng([data.lat, data.lng]).setOpacity(1.0);
+        if (window["marker_" + data.hash]) {
+            window["marker_" + data.hash].setLatLng([data.lat, data.lng]).setOpacity(1.0);
         } else {
-            window[`marker_${data.hash}`] = L.marker([data.lat, data.lng], {
+            window["marker_" + data.hash] = L.marker([data.lat, data.lng], {
                 icon: L.divIcon({ html: divMarkerMarkup, className: '' })
             }).addTo(map);
         }
 
-        window[`marker_${data.hash}`].bindPopup(`<b>NODE REG: ${data.hash.slice(0,10)}</b><br><button class='btn-main' style='padding:2px; font-size:0.55rem;' onclick='displayTargetBiometricHUD("${data.hash}")'>HOOK INTERCEPT</button>`);
+        window["marker_" + data.hash].bindPopup('<b>NODE REG: ' + data.hash.slice(0,10) + '</b><br><button class="btn-main" style="padding:2px; font-size:0.55rem;" onclick="displayTargetBiometricHUD(\'' + data.hash + '\')">HOOK INTERCEPT</button>');
 
         if (data.breach) {
             document.getElementById('fenceStatus').innerText = "BREACH WARNING";
@@ -463,25 +461,25 @@
 
     function displayTargetBiometricHUD(id) {
         unlockSpeechEngineOnInteraction();
-        const node = activeNodesMemoryObject[id];
+        var node = activeNodesMemoryObject[id];
         if (!node || !node.vitals) return;
         document.getElementById('biometricVitalsDeck').style.display = 'block';
         document.getElementById('vitalTargetId').innerText = id.slice(0, 12);
-        document.getElementById('vitalPulseValue').innerText = `${node.vitals.hr} BPM`;
-        document.getElementById('vitalTempValue').innerText = `${node.vitals.temp} °C`;
+        document.getElementById('vitalPulseValue').innerText = node.vitals.hr + " BPM";
+        document.getElementById('vitalTempValue').innerText = node.vitals.temp + " °C";
         document.getElementById('vitalStressValue').innerText = node.vitals.stress;
         document.getElementById('vitalStressValue').style.color = node.vitals.stress.includes("CRITICAL") ? 'var(--threat-red)' : 'var(--radar-green)';
-        speakGlobal(`Biometrics hooked for node ${id.slice(0,4)}`);
+        speakGlobal("Biometrics hooked for node " + id.slice(0,4));
     }
 
     function calculateAutonomousInterceptVector(breachingNode) {
-        let nearestIntercepterNode = null;
-        let shortestCalculatedDistance = Infinity;
+        var nearestIntercepterNode = null;
+        var shortestCalculatedDistance = Infinity;
 
-        Object.keys(activeNodesMemoryObject).forEach(id => {
-            const potentialUnit = activeNodesMemoryObject[id];
+        Object.keys(activeNodesMemoryObject).forEach(function(id) {
+            var potentialUnit = activeNodesMemoryObject[id];
             if (id !== breachingNode.hash && !potentialUnit.breach && potentialUnit.lat) {
-                let currentDistanceSpaceDelta = map.distance([breachingNode.lat, breachingNode.lng], [potentialUnit.lat, potentialUnit.lng]);
+                var currentDistanceSpaceDelta = map.distance([breachingNode.lat, breachingNode.lng], [potentialUnit.lat, potentialUnit.lng]);
                 if (currentDistanceSpaceDelta < shortestCalculatedDistance) {
                     shortestCalculatedDistance = currentDistanceSpaceDelta;
                     nearestIntercepterNode = potentialUnit;
@@ -489,44 +487,44 @@
             }
         });
 
-        laserTracerArcsArray.forEach(arc => map.removeLayer(arc));
+        laserTracerArcsArray.forEach(function(arc) { map.removeLayer(arc); });
         laserTracerArcsArray = [];
 
         if (nearestIntercepterNode) {
-            const vectorCoordinatesLineArray = [[nearestIntercepterNode.lat, nearestIntercepterNode.lng], [breachingNode.lat, breachingNode.lng]];
-            const estimatedTimeInterceptMinutes = Math.round((shortestCalculatedDistance / 1000) / 0.8); 
+            var vectorCoordinatesLineArray = [[nearestIntercepterNode.lat, nearestIntercepterNode.lng], [breachingNode.lat, breachingNode.lng]];
+            var estimatedTimeInterceptMinutes = Math.round((shortestCalculatedDistance / 1000) / 0.8); 
 
-            const interceptTracerVisualPath = L.polyline(vectorCoordinatesLineArray, {
+            var interceptTracerVisualPath = L.polyline(vectorCoordinatesLineArray, {
                 color: 'var(--threat-red)', weight: 2, opacity: 0.8, className: 'animated-laser-arc-path'
             }).addTo(map);
             
-            interceptTracerVisualPath.bindPopup(`<b>AUTONOMOUS INTERCEPT ROUTE</b><br>Target: ${nearestIntercepterNode.hash.slice(0,6)} dispatched.<br>ETI: ~${estimatedTimeInterceptMinutes} MINS`).openPopup();
+            interceptTracerVisualPath.bindPopup('<b>AUTONOMOUS INTERCEPT ROUTE</b><br>Target: ' + nearestIntercepterNode.hash.slice(0,6) + ' dispatched.<br>ETI: ~' + estimatedTimeInterceptMinutes + ' MINS').openPopup();
             laserTracerArcsArray.push(interceptTracerVisualPath);
             
-            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [VECTOR] ASSIGNED UNIT ${nearestIntercepterNode.hash.slice(0,6)} TO INTERCEPT BREACH</span>`;
+            document.getElementById('logArea').innerHTML += "<br><span style='color:var(--threat-red)'>> [VECTOR] ASSIGNED UNIT " + nearestIntercepterNode.hash.slice(0,6) + " TO INTERCEPT BREACH</span>";
             speakGlobal("Perimeter boundary breach confirmed. Intercept calculation vector mapped.");
         }
     }
 
     function renderGlobalNetworkMeshTopology() {
-        meshRelayLinesArray.forEach(line => map.removeLayer(line));
+        meshRelayLinesArray.forEach(function(line) { map.removeLayer(line); });
         meshRelayLinesArray = [];
 
-        const nodesKeysList = Object.keys(activeNodesMemoryObject);
-        const MAXIMUM_MESH_HOP_RANGE_METERS = 280000; 
+        var nodesKeysList = Object.keys(activeNodesMemoryObject);
+        var MAXIMUM_MESH_HOP_RANGE_METERS = 280000; 
 
-        for (let i = 0; i < nodesKeysList.length; i++) {
-            let outerNode = activeNodesMemoryObject[nodesKeysList[i]];
+        for (var i = 0; i < nodesKeysList.length; i++) {
+            var outerNode = activeNodesMemoryObject[nodesKeysList[i]];
             if (!outerNode.lat) continue;
 
-            for (let j = i + 1; j < nodesKeysList.length; j++) {
-                let innerNode = activeNodesMemoryObject[nodesKeysList[j]];
+            for (var j = i + 1; j < nodesKeysList.length; j++) {
+                var innerNode = activeNodesMemoryObject[nodesKeysList[j]];
                 if (!innerNode.lat) continue;
 
-                let realGeometricSeparationDistance = map.distance([outerNode.lat, outerNode.lng], [innerNode.lat, innerNode.lng]);
+                var realGeometricSeparationDistance = map.distance([outerNode.lat, outerNode.lng], [innerNode.lat, innerNode.lng]);
                 
                 if (realGeometricSeparationDistance <= MAXIMUM_MESH_HOP_RANGE_METERS) {
-                    let topologyLineSegmentMarker = L.polyline([[outerNode.lat, outerNode.lng], [innerNode.lat, innerNode.lng]], {
+                    var topologyLineSegmentMarker = L.polyline([[outerNode.lat, outerNode.lng], [innerNode.lat, innerNode.lng]], {
                         color: 'var(--cyber-blue)', weight: 1, opacity: 0.4, dashArray: '4, 4'
                     }).addTo(map);
                     meshRelayLinesArray.push(topologyLineSegmentMarker);
@@ -536,614 +534,17 @@
     }
 
     function startDeadReckoningPredictiveDaemon() {
-        setInterval(() => {
-            const currentTimeStamp = new Date().getTime();
-            Object.keys(activeNodesMemoryObject).forEach(id => {
-                const telemetryPointsArray = individualEntityFootprintBreadcrumbs[id];
+        setInterval(function() {
+            var currentTimeStamp = new Date().getTime();
+            Object.keys(activeNodesMemoryObject).forEach(function(id) {
+                var telemetryPointsArray = individualEntityFootprintBreadcrumbs[id];
                 if (!telemetryPointsArray || telemetryPointsArray.length < 2) return;
 
-                const lastKnownReportNode = telemetryPointsArray[telemetryPointsArray.length - 1];
-                const silentEllapsedTimeSeconds = (currentTimeStamp - lastKnownReportNode.time) / 1000;
+                var lastKnownReportNode = telemetryPointsArray[telemetryPointsArray.length - 1];
+                var silentEllapsedTimeSeconds = (currentTimeStamp - lastKnownReportNode.time) / 1000;
 
                 if (silentEllapsedTimeSeconds > 6 && silentEllapsedTimeSeconds < 30) {
-                    const priorKnownReportNode = telemetryPointsArray[telemetryPointsArray.length - 2];
+                    var priorKnownReportNode = telemetryPointsArray[telemetryPointsArray.length - 2];
                     
-                    const latDeltaVelocityFactor = (lastKnownReportNode.lat - priorKnownReportNode.lat) / ((lastKnownReportNode.time - priorKnownReportNode.time) || 1);
-                    const lngDeltaVelocityFactor = (lastKnownReportNode.lng - priorKnownReportNode.lng) / ((lastKnownReportNode.time - priorKnownReportNode.time) || 1);
-                    
-                    const timeWindowBypass = currentTimeStamp - lastKnownReportNode.time;
-                    const projectedExtrapolatedLat = lastKnownReportNode.lat + (latDeltaVelocityFactor * timeWindowBypass);
-                    const projectedExtrapolatedLng = lastKnownReportNode.lng + (lngDeltaVelocityFactor * timeWindowBypass);
-
-                    if (kineticDriftPredictiveMarkers[id]) {
-                        kineticDriftPredictiveMarkers[id].setLatLng([projectedExtrapolatedLat, projectedExtrapolatedLng]);
-                    } else {
-                        document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-amber)'>> [WARN] LOST COMMS LINK WITH ${id.slice(0,6)}. ENGAGING KINETIC DRIFT MODELS.</span>`;
-                        speakGlobal(`Signal dropped for node ${id.slice(0,4)}. Running drift projection.`);
-                        
-                        const ghostVectorHtmlMarkup = `<div style="background:transparent; width:14px; height:14px; border-radius:50%; border:2px dashed var(--threat-amber); font-size:8px; text-align:center; color:var(--threat-amber);">?</div>`;
-                        kineticDriftPredictiveMarkers[id] = L.marker([projectedExtrapolatedLat, projectedExtrapolatedLng], {
-                            icon: L.divIcon({ html: ghostVectorHtmlMarkup, className:'' })
-                        }).addTo(map).bindPopup(`<b>KINETIC DRIFT ESTIMATE</b><br>Node: ${id.slice(0,6)}<br>Status: Disconnected`);
-                    }
-                }
-            });
-        }, 3000);
-    }
-
-    function toggleAdminJammerDeploymentMode() {
-        unlockSpeechEngineOnInteraction();
-        jammerDeploymentModeActive = true;
-        alert("ELECTRONIC WARFARE INTERCEPT MODE READY: Click coordinates anywhere on the master map layout grid to drop an EW jamming shield field.");
-    }
-
-    function renderElectronicWarfareZone(data) {
-        let interferenceFieldCircle = L.circle([data.lat, data.lng], {
-            color: 'var(--threat-red)', fillColor: 'var(--threat-red)', fillOpacity: 0.15, radius: data.radius, weight: 1, dashArray: '3, 6'
-        }).addTo(map);
-        
-        interferenceFieldCircle.bindPopup(`<b>ACTIVE SIG-INT JAMMING SECTOR</b><br>ID: ${data.id}<br>Frequencies Blanked: UHF/VHF Tracking Loops`);
-        activeJammingZoneCircles.push(interferenceFieldCircle);
-        document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [SIG-INT] ELECTRONIC WARFARE JAMMER BLANKET INSTANTIATED AT REFMESH ${data.id}</span>`;
-        speakGlobal("Electronic jamming frequency blanket deployed successfully.");
-    }
-
-    function deployCryptographicDeadDropTarget() {
-        unlockSpeechEngineOnInteraction();
-        const centerRefCoord = map.getCenter();
-        channel.send({
-            type: 'broadcast', event: 'deploy_deaddrop_packet',
-            payload: { lat: centerRefCoord.lat + 0.1, lng: centerRefCoord.lng - 0.1, dropId: "DROP-CIPHER-" + Math.floor(1000 + Math.random() * 9000) }
-        });
-    }
-
-    function renderCryptographicDeadDropMarker(data) {
-        cryptographicDeadDropsRegister[data.dropId] = data;
-        L.marker([data.lat, data.lng], {
-            icon: L.divIcon({
-                html: `<div style="background:black; border:2px solid var(--cyber-blue); width:12px; height:12px; border-radius:3px;"></div>`, className: ''
-            })
-        }).addTo(map).bindPopup(`<b>CRYPTOGRAPHIC DEAD-DROP CONTAINER</b><br>ID: ${data.dropId}<br>Security Layer: Proximity Verification Enforced`);
-        document.getElementById('logArea').innerHTML += `<br><span style='color:var(--cyber-blue)'>> [CRYPTO] CONFISCATED DATA DROP PATTERN RECONSTRUCTED: ${data.dropId}</span>`;
-        speakGlobal("Cryptographic drop point established.");
-    }
-
-    function encodeSecretDataIntoDecoyImage() {
-        const file = document.getElementById('stegoLoader').files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            internalCarrierStegoBytes = e.target.result; 
-            const canvas = document.getElementById('stegoPreviewCanvas');
-            canvas.style.display = "block";
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            img.onload = function() { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
-            img.src = e.target.result;
-            document.getElementById('logArea').innerHTML += `<br>> Data stream packaged inside canvas matrix structure.`;
-            speakGlobal("Data injection loop complete.");
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function extractSecretDataFromDecoyImage() {
-        unlockSpeechEngineOnInteraction();
-        if (!internalCarrierStegoBytes) {
-            alert("No data payload signature allocated inside system caches."); return;
-        }
-
-        navigator.geolocation.getCurrentPosition((pos) => {
-            let localizedOperatorProximityCleared = false;
-            
-            Object.keys(cryptographicDeadDropsRegister).forEach(id => {
-                let dropInstance = cryptographicDeadDropsRegister[id];
-                let checkRadiusSeparation = map.distance([pos.coords.latitude, pos.coords.longitude], [dropInstance.lat, dropInstance.lng]);
-                
-                if (checkRadiusSeparation < 50000) { 
-                    localizedOperatorProximityCleared = true;
-                }
-            });
-
-            if (localizedOperatorProximityCleared) {
-                document.getElementById('logArea').innerHTML += `<br><span style='color:var(--radar-green)'>> [DECIPHER SUCCESS] CLASSIFIED FOOTPRINT DATA BLOCK DUMPED INTO TEXT MATRIX.</span>`;
-                speakGlobal("Classified data blocks extracted within perimeter.");
-            } else {
-                alert("DECRYPTION ERROR: Cryptographic signature keys locked. Device GPS registration sits outside localized container extraction radius.");
-                document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [SECURITY FAILURE] DECRYPTION ATTEMPT OUTSIDE ZONE CONSTANTS BLOCKED</span>`;
-                speakGlobal("Security violation. Decryption keys structural access blocked.");
-            }
-        }, (err) => {
-            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--cyber-blue)'>> [DEV COMPLIANCE] BYPASSING HARDWARE GEOLOCATION ACCESS CHECKS... PROXIMITY CONFIRMED</span>`;
-            speakGlobal("Classified data blocks extracted.");
-        });
-    }
-
-    function applySpectrumFilter(filterStyleModeKey) {
-        unlockSpeechEngineOnInteraction();
-        const containerElementMapLayer = document.getElementById('map');
-        containerElementMapLayer.className = ""; 
-        
-        if (filterStyleModeKey === 'thermal') {
-            containerElementMapLayer.classList.add('map-filter-thermal');
-            document.getElementById('threatLevel').innerText = "THERMAL FREQ OVERLAY";
-            speakGlobal("Thermal spectrum applied.");
-        } else if (filterStyleModeKey === 'vector') {
-            containerElementMapLayer.classList.add('map-filter-vector');
-            document.getElementById('threatLevel').innerText = "VECTOR TOPOLOGY MODE";
-            speakGlobal("Topology mode active.");
-        } else {
-            document.getElementById('threatLevel').innerText = "NOMINAL OPERATIONAL CORE";
-            speakGlobal("Standard mapping restored.");
-        }
-    }
-
-    function handleTerminalCliKey(event) {
-        if (event.key === 'Enter') {
-            const entryFieldInput = document.getElementById('cliInput');
-            const directScriptString = entryFieldInput.value.trim().toLowerCase();
-            
-            if (directScriptString === '/lockdown') {
-                broadcastSystemStatus('RED');
-                executeLocalStatusChange('RED');
-                document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [MACRO] OVERRIDE: GLOBAL PERIMETER LOCKDOWN SCRIPT INITIALIZED</span>`;
-                speakGlobal("Critical emergency system lockdown script applied from command terminal console.");
-            } else if (directScriptString === '/pingall') {
-                queryDeviceDiagnosticsAndThrottleLoop();
-                document.getElementById('logArea').innerHTML += `<br>> [MACRO] BROADCASTING SILENT REFMESH TELEMETRY REQUEST TO SWARM ARRAYS...`;
-                speakGlobal("Pinging tactical arrays.");
-            } else {
-                alert("Unknown terminal macro syntax execution code input string parameters.");
-            }
-            entryFieldInput.value = "";
-        }
-    }
-
-    function toggleSyntheticGhostPopulator() {
-        unlockSpeechEngineOnInteraction();
-        if (syntheticHumanLoopTimer) {
-            clearInterval(syntheticHumanLoopTimer); syntheticHumanLoopTimer = null;
-            document.getElementById('logArea').innerHTML += `<br>> Procedural generators set to offline.`; 
-            speakGlobal("Simulation terminated.");
-            return;
-        }
-        document.getElementById('logArea').innerHTML += `<br><span style='color:var(--cyber-blue)'>> Generating procedural ghost target arrays...</span>`;
-        speakGlobal("Launching ghost drone target simulator loops.");
-        
-        syntheticHumanLoopTimer = setInterval(() => {
-            for (let i = 0; i < 4; i++) {
-                let id = `GHOST-SWARM-${i}`;
-                let driftLat = FENCE_CENTER_LAT + ((Math.random() - 0.5) * 1.5);
-                let driftLng = FENCE_CENTER_LNG + ((Math.random() - 0.5) * 1.5);
-                
-                handleIncomingNode({
-                    lat: driftLat, lng: driftLng, hash: id,
-                    breach: map.distance([driftLat, driftLng], [FENCE_CENTER_LAT, FENCE_CENTER_LNG]) > MAX_ALLOWED_RADIUS_METERS,
-                    isGhost: true, timestamp: new Date().getTime(),
-                    vitals: { hr: Math.floor(65 + Math.random() * 55), temp: (36.2 + Math.random() * 1.5).toFixed(1), stress: Math.random() > 0.88 ? "CRITICAL OVERLOAD" : "NOMINAL" }
-                });
-            }
-        }, 4000);
-    }
-
-    function triggerAudioTone(freq, type, duration) {
-        try {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
-            osc.type = type; osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + duration);
-        } catch(e) {}
-    }
-
-    function handleChatKey(e) { if(e.key === 'Enter') sendSecureChatMessage(); }
-    function sendSecureChatMessage() {
-        unlockSpeechEngineOnInteraction();
-        const input = document.getElementById('chatInput'); if (!input.value.trim()) return;
-        channel.send({ type: 'broadcast', event: 'secure_chat', payload: { message: input.value.trim(), id: "NODE_" + Math.random().toString(36).substring(2, 5).toUpperCase() } });
-        input.value = '';
-    }
-
-    function appendChatMessage(data) {
-        const msgArea = document.getElementById('chatMessages');
-        msgArea.innerHTML += `<div><span style="color:var(--radar-green)">[${data.id}]:</span> ${data.message}</div>`;
-        msgArea.scrollTop = msgArea.scrollHeight;
-        triggerAudioTone(900, 'sine', 0.04);
-        speakGlobal(`Incoming data translation packet from channel node.`);
-    }
-
-    function speakGlobal(msg) {
-        if (!deviceHasBeenInteractedWith) {
-            queuedSpeechAlertPhrasesArray.push(msg);
-            return;
-        }
-
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utter = new SpeechSynthesisUtterance(msg);
-            let voices = window.speechSynthesis.getVoices();
-            utter.voice = voices.find(v => v.lang.includes("en-GB")) || voices[0];
-            utter.pitch = 0.6; utter.rate = 1.0; window.speechSynthesis.speak(utter);
-        }
-    }
-
-    function broadcastSystemStatus(status) {
-        unlockSpeechEngineOnInteraction();
-        channel.send({ type: 'broadcast', event: 'status_override', payload: { status: status } });
-    }
-
-    function executeLocalStatusChange(status) {
-        const header = document.getElementById('mainHeader');
-        const pulse = document.getElementById('statusPulse');
-        if (status === 'RED') {
-            header.style.borderBottom = "2px solid #ff0000"; pulse.style.background = "#ff0000";
-            if(!alarmInterval) { alarmInterval = setInterval(() => { triggerAudioTone(440, 'sawtooth', 0.15); }, 600); }
-        } else {
-            header.style.borderBottom = "2px solid #00ff66"; pulse.style.background = "#00ff66";
-            document.getElementById('fenceStatus').innerText = "SECURE BOUNDS"; document.getElementById('fenceStatus').style.color = "var(--radar-green)";
-            if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
-        }
-    }
-
-    function emergencyWipe() {
-        unlockSpeechEngineOnInteraction();
-        if (confirm("PURGE TOTAL ENCRYPTED OPERATION CACHES IN SYSTEM SHELFS?")) {
-            document.getElementById('logArea').innerHTML = "[SYSTEM_WIPED_CLEAN]";
-            knownNodes.clear(); activeNodesMemoryObject = {}; individualEntityFootprintBreadcrumbs = {};
-            document.getElementById('nodeCount').innerText = "0";
-            speakGlobal("Data tracks vaporized. Operational terminal connection dropped.");
-            broadcastSystemStatus('RED');
-        }
-    }
-
-    function downloadForensicLogs() {
-        unlockSpeechEngineOnInteraction();
-        const logContent = document.getElementById('logArea').innerText;
-        const blob = new Blob([logContent], { type: "text/plain" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "AegisGrid_Forensic_v4.txt";
-        a.click();
-    }
-
-    function showSection(id) {
-        unlockSpeechEngineOnInteraction();
-        document.getElementById('dashboard').style.display = (id === 'dashboard') ? 'block' : 'none';
-        document.getElementById('admin').style.display = (id === 'admin') ? 'block' : 'none';
-        document.getElementById('about').style.display = (id === 'about') ? 'block' : 'none';
-        document.getElementById('sidebar').style.display = (id === 'admin') ? 'none' : 'block';
-    }
-
-    async function requestAdminAccess() {
-        unlockSpeechEngineOnInteraction();
-        const input = prompt("ENTER MASTER ARCHITECT SECURITY ACCESS KEY:"); if (!input) return;
-        try {
-            const response = await fetch('/api/authorize-admin', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: input })
-            });
-            const data = await response.ok ? await response.json() : null;
-            if (data && data.authorized) { showSection('admin'); speakGlobal("Access granted. Welcome back, Architect."); }
-            else { alert("ACCESS SYSTEM VIOLATION REJECTED."); }
-        } catch (err) { console.error("Server synchronization mismatch."); }
-    }
-
-    // =================================================================
-    // DYNAMIC MULTI-PEER CONVENTIONAL & CONFERENCE P2P OPTICS CORE (WebRTC)
-    // =================================================================
-    let cameraMediaStreamInstance = null;
-    let meshPeerConnectionsMap = {}; 
-    
-    const rtcIceConfig = {
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-    };
-
-    channel.on('broadcast', { event: 'rtc_signal_packet' }, async (payload) => {
-        const packet = payload.payload;
-        const myUID = document.getElementById('integrityHash').innerText;
-
-        if (packet.sender === myUID) return;
-        if (packet.routingMode === 'DIRECT' && packet.targetDestination !== myUID) return;
-
-        try {
-            if (packet.sdp) {
-                if (!meshPeerConnectionsMap[packet.sender]) {
-                    setupIndividualPeerConnection(packet.sender, packet.routingMode);
-                }
-                
-                await meshPeerConnectionsMap[packet.sender].setRemoteDescription(new RTCSessionDescription(packet.sdp));
-                
-                if (packet.sdp.type === 'offer') {
-                    if (cameraMediaStreamInstance) {
-                        cameraMediaStreamInstance.getTracks().forEach(track => {
-                            meshPeerConnectionsMap[packet.sender].addTrack(track, cameraMediaStreamInstance);
-                        });
-                    }
-                    const answer = await meshPeerConnectionsMap[packet.sender].createAnswer();
-                    await meshPeerConnectionsMap[packet.sender].setLocalDescription(answer);
-                    
-                    channel.send({
-                        type: 'broadcast', event: 'rtc_signal_packet',
-                        payload: {
-                            sdp: meshPeerConnectionsMap[packet.sender].localDescription,
-                            sender: myUID,
-                            targetDestination: packet.sender,
-                            routingMode: packet.routingMode
-                        }
-                    });
-                }
-            } else if (packet.candidate) {
-                if (meshPeerConnectionsMap[packet.sender]) {
-                    await meshPeerConnectionsMap[packet.sender].addIceCandidate(new RTCIceCandidate(packet.candidate));
-                }
-            } else if (packet.signalAction === 'TERMINATE_SIGNAL_LINK') {
-                purgeRemoteStreamElement(packet.sender);
-            }
-        } catch (err) {
-            console.error("Tactical WebRTC Core Signal Failure:", err);
-        }
-    });
-
-    function setupIndividualPeerConnection(remoteOperatorUID, currentRoutingMode) {
-        let pc = new RTCPeerConnection(rtcIceConfig);
-        meshPeerConnectionsMap[remoteOperatorUID] = pc;
-
-        pc.onicecandidate = (event) => {
-            if (event.candidate) {
-                channel.send({
-                    type: 'broadcast', event: 'rtc_signal_packet',
-                    payload: {
-                        candidate: event.candidate,
-                        sender: document.getElementById('integrityHash').innerText,
-                        targetDestination: remoteOperatorUID,
-                        routingMode: currentRoutingMode
-                    }
-                });
-            }
-        };
-
-        pc.ontrack = (event) => {
-            const gridContainer = document.getElementById('videoTransmissionGrid');
-            let videoWrapperId = `wrapper_${remoteOperatorUID}`;
-            
-            if (!document.getElementById(videoWrapperId)) {
-                let wrapper = document.createElement('div');
-                wrapper.id = videoWrapperId;
-                
-                let systemLabel = currentRoutingMode === 'DIRECT' ? 'DIRECT_LINK' : 'MESH_CONF';
-                wrapper.innerHTML = `
-                    <div style="font-size:0.45rem; color:var(--cyber-blue); text-align:center; margin-bottom:2px; letter-spacing:1px;">
-                        [${systemLabel}_${remoteOperatorUID.substring(0,6)}]
-                    </div>
-                    <video id="video_${remoteOperatorUID}" autoplay playsinline style="width:100%; height:95px; background:#000; border:1px solid rgba(0,255,255,0.3); object-fit: cover;"></video>
-                `;
-                gridContainer.appendChild(wrapper);
-                
-                const totalStreams = gridContainer.children.length;
-                gridContainer.style.gridTemplateColumns = totalStreams > 4 ? '1fr 1fr 1fr' : (totalStreams > 1 ? '1fr 1fr' : '1fr');
-            }
-
-            const remoteStreamElement = document.getElementById(`video_${remoteOperatorUID}`);
-            if (remoteStreamElement && event.streams[0]) {
-                remoteStreamElement.srcObject = event.streams[0];
-                document.getElementById('logArea').innerHTML += `<br><span style='color:var(--cyber-blue)'>> [NET_OPTICS] SECURE LINK DETECTED FROM ID: ${remoteOperatorUID.substring(0,8)}</span>`;
-                triggerAudioTone(880, 'sine', 0.15);
-                speakGlobal("Incoming network stream integrated into tactical panel.");
-            }
-        };
-    }
-
-    async function initializeTacticalCamera() {
-        unlockSpeechEngineOnInteraction();
-        const videoElement = document.getElementById('tacticalCameraFeed');
-        try {
-            cameraMediaStreamInstance = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "user", width: { ideal: 320 }, height: { ideal: 240 } }, 
-                audio: true 
-            });
-            videoElement.srcObject = cameraMediaStreamInstance;
-            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-amber)'>> [OPTICS] LOCAL CAMERA MODULE HARDWARE LOCK ESTABLISHED</span>`;
-            document.getElementById('callModeIndicator').innerText = "ONLINE";
-            document.getElementById('callModeIndicator').style.color = "var(--threat-amber)";
-            document.getElementById('callModeIndicator').style.borderColor = "var(--threat-amber)";
-            triggerAudioTone(600, 'sine', 0.08);
-            speakGlobal("Tactical hardware camera locked and active.");
-        } catch (err) {
-            alert("HARDWARE CAPTURE REJECTED: Confirm browser privacy or hardware permissions.");
-            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [OPTICS] CRITICAL CAPTURE ERROR: PERMISSION DENIED</span>`;
-        }
-    }
-
-    async function establishOutboundCallConnection() {
-        unlockSpeechEngineOnInteraction();
-        if (!cameraMediaStreamInstance) {
-            alert("Initialize and engage your camera array prior to issuing communication handshakes.");
-            return;
-        }
-
-        const callTargetMode = document.getElementById('callTargetSelector').value;
-        const myUID = document.getElementById('integrityHash').innerText;
-        
-        if (callTargetMode === "ALL_NODES") {
-            document.getElementById('callModeIndicator').innerText = "CONF_MESH";
-            document.getElementById('callModeIndicator').style.color = "var(--radar-green)";
-            document.getElementById('callModeIndicator').style.borderColor = "var(--radar-green)";
-            document.getElementById('logArea').innerHTML += `<br>> [NET_OPTICS] BROADCASTING CONFERENCE MESH CONNECTIONS SIGNATURES...`;
-            
-            Object.keys(activeNodesMemoryObject).forEach(async (targetOperatorID) => {
-                if (targetOperatorID !== myUID) {
-                    setupIndividualPeerConnection(targetOperatorID, 'CONFERENCE');
-                    cameraMediaStreamInstance.getTracks().forEach(track => {
-                        meshPeerConnectionsMap[targetOperatorID].addTrack(track, cameraMediaStreamInstance);
-                    });
-                    const offer = await meshPeerConnectionsMap[targetOperatorID].createOffer();
-                    await meshPeerConnectionsMap[targetOperatorID].setLocalDescription(offer);
-                    
-                    channel.send({
-                        type: 'broadcast', event: 'rtc_signal_packet',
-                        payload: { sdp: meshPeerConnectionsMap[targetOperatorID].localDescription, sender: myUID, routingMode: 'CONFERENCE' }
-                    });
-                }
-            });
-            speakGlobal("Broadcasting structural conference handshake vectors.");
-        } else {
-            const targetID = callTargetMode;
-            document.getElementById('callModeIndicator').innerText = "DIRECT_CALL";
-            document.getElementById('callModeIndicator').style.color = "var(--cyber-blue)";
-            document.getElementById('callModeIndicator').style.borderColor = "var(--cyber-blue)";
-            document.getElementById('logArea').innerHTML += `<br>> [NET_OPTICS] LAUNCHING TARGETED DIRECT HANDSHAKE TO PROXIMITY ID: ${targetID.substring(0,8)}...`;
-            
-            setupIndividualPeerConnection(targetID, 'DIRECT');
-            cameraMediaStreamInstance.getTracks().forEach(track => {
-                meshPeerConnectionsMap[targetID].addTrack(track, cameraMediaStreamInstance);
-            });
-            const offer = await meshPeerConnectionsMap[targetID].createOffer();
-            await meshPeerConnectionsMap[targetID].setLocalDescription(offer);
-            
-            channel.send({
-                type: 'broadcast', event: 'rtc_signal_packet',
-                payload: { 
-                    sdp: meshPeerConnectionsMap[targetID].localDescription, 
-                    sender: myUID, 
-                    targetDestination: targetID, 
-                    routingMode: 'DIRECT' 
-                }
-            });
-            speakGlobal("Transmitting direct private communication signal vectors.");
-        }
-    }
-
-    function purgeRemoteStreamElement(operatorUID) {
-        if (meshPeerConnectionsMap[operatorUID]) {
-            meshPeerConnectionsMap[operatorUID].close();
-            delete meshPeerConnectionsMap[operatorUID];
-        }
-        let wrapper = document.getElementById(`wrapper_${operatorUID}`);
-        if (wrapper) {
-            wrapper.remove();
-            const gridContainer = document.getElementById('videoTransmissionGrid');
-            const totalStreams = gridContainer.children.length;
-            gridContainer.style.gridTemplateColumns = totalStreams > 4 ? '1fr 1fr 1fr' : (totalStreams > 1 ? '1fr 1fr' : '1fr');
-        }
-    }
-
-    function killTacticalCamera() {
-        unlockSpeechEngineOnInteraction();
-        const localVideo = document.getElementById('tacticalCameraFeed');
-        const myUID = document.getElementById('integrityHash').innerText;
-        
-        channel.send({
-            type: 'broadcast', event: 'rtc_signal_packet',
-            payload: { signalAction: 'TERMINATE_SIGNAL_LINK', sender: myUID }
-        });
-
-        if (cameraMediaStreamInstance) {
-            cameraMediaStreamInstance.getTracks().forEach(track => track.stop());
-            localVideo.srcObject = null;
-            cameraMediaStreamInstance = null;
-        }
-
-        Object.keys(meshPeerConnectionsMap).forEach(uid => {
-            purgeRemoteStreamElement(uid);
-        });
-
-        document.getElementById('callModeIndicator').innerText = "STANDBY";
-        document.getElementById('callModeIndicator').style.color = "var(--cyber-blue)";
-        document.getElementById('callModeIndicator').style.borderColor = "var(--cyber-blue)";
-        document.getElementById('logArea').innerHTML += `<br>> [NET_OPTICS] TELEMETRY COMMUNICATIONS ROUTER TERMINATED AND PURGED.`;
-        speakGlobal("All visual streaming modules deactivated.");
-    }
-
-    // ==========================================
-    // VOICE COMMAND ENGINE COGNITION CORE
-    // ==========================================
-    let voiceRecognitionInstance = null;
-    let voiceIsListeningState = false;
-
-    function initializeVoiceEngineSetup() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            document.getElementById('voiceStatusDisplay').innerText = "SPEECH API REJECTED BY BROWSER";
-            return null;
-        }
-        
-        const recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.lang = 'en-US';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        recognition.onstart = () => {
-            voiceIsListeningState = true;
-            document.getElementById('voiceStatusDisplay').innerText = "SYSTEM LISTENING... SPEAK NOW";
-            document.getElementById('voiceStatusDisplay').style.color = "var(--threat-red)";
-            document.getElementById('voiceListenBtn').innerText = "HALT AUDIO CAPTURE";
-        };
-
-        recognition.onresult = (event) => {
-            const spokenPhraseText = event.results[0][0].transcript.trim().toLowerCase();
-            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--cyber-blue)'>> [VOICE COGNITION]: "${spokenPhraseText}"</span>`;
-            processVoiceCommandMacros(spokenPhraseText);
-        };
-
-        recognition.onerror = () => {
-            document.getElementById('voiceStatusDisplay').innerText = "AUDIO ERROR: TRY AGAIN";
-            stopVoiceListeningState();
-        };
-
-        recognition.onend = () => {
-            stopVoiceListeningState();
-        };
-
-        return recognition;
-    }
-
-    function toggleVoiceCommandEngine() {
-        unlockSpeechEngineOnInteraction();
-        if (!voiceRecognitionInstance) {
-            voiceRecognitionInstance = initializeVoiceEngineSetup();
-        }
-        
-        if (!voiceRecognitionInstance) return;
-
-        if (!voiceIsListeningState) {
-            try { voiceRecognitionInstance.start(); } catch(e) {}
-        } else {
-            voiceRecognitionInstance.stop();
-        }
-    }
-
-    function stopVoiceListeningState() {
-        voiceIsListeningState = false;
-        document.getElementById('voiceStatusDisplay').innerText = "AUDIO ENGINE: STANDBY";
-        document.getElementById('voiceStatusDisplay').style.color = "var(--text-digital)";
-        document.getElementById('voiceListenBtn').innerText = "INITIALIZE VOICE AUDIO";
-    }
-
-    function processVoiceCommandMacros(phrase) {
-        if (phrase.includes("lockdown") || phrase.includes("alarm red")) {
-            broadcastSystemStatus('RED');
-            executeLocalStatusChange('RED');
-            document.getElementById('logArea').innerHTML += `<br><span style='color:var(--threat-red)'>> [VOICE MACRO] TRIGGERED SYSTEM-WIDE LOCKDOWN</span>`;
-            speakGlobal("Voice authentication accepted. Activating perimeter grid lockdown.");
-        } 
-        else if (phrase.includes("clear") || phrase.includes("status green")) {
-            broadcastSystemStatus('GREEN');
-            executeLocalStatusChange('GREEN');
-            speakGlobal("Grid status restored to nominal conditions.");
-        } 
-        else if (phrase.includes("ghost") || phrase.includes("simulator")) {
-            toggleSyntheticGhostPopulator();
-        } 
-        else if (phrase.includes("ping") || phrase.includes("hardware")) {
-            queryDeviceDiagnosticsAndThrottleLoop();
-            speakGlobal("Diagnostics refreshed.");
-        } 
-        else {
-            speakGlobal("Command syntax unrecognized.");
-        }
-    }
-</script>
-</body>
-</html>
+                    var latDeltaVelocityFactor = (lastKnownReportNode.lat - priorKnownReportNode.lat) / ((lastKnownReportNode.time - priorKnownReportNode.time) || 1);
+                    var lngDeltaVelocityFactor = (lastKnownReportNode.lng - priorKnownReportNode.lng) / ((lastKnownReportNode.time - priorKnownReportNode
