@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AEGISGRID // ULTRA COMMAND MASTER CORE v4.0</title>
+    <title>AEGISGRID // ULTRA COMMAND MASTER CORE v4.1</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root { 
@@ -56,33 +56,23 @@
                 max-height: calc(100vh - 120px); 
                 align-items: start;
             }
-            #map {
-                height: calc(100vh - 170px) !important; 
-            }
-            aside#sidebar {
-                height: calc(100vh - 170px);
-                overflow-y: auto; 
-                padding-right: 5px;
-            }
+            #map { height: calc(100vh - 170px) !important; }
+            aside#sidebar { height: calc(100vh - 170px); overflow-y: auto; padding-right: 5px; }
             aside#sidebar::-webkit-scrollbar { width: 4px; }
             aside#sidebar::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); }
             aside#sidebar::-webkit-scrollbar-thumb { background: var(--radar-green); border-radius: 2px; }
         }
 
         @media (max-width: 768px) { 
-            main { 
-                grid-template-columns: 1fr;
-            } 
-            #map {
-                height: 450px !important;
-            }
+            main { grid-template-columns: 1fr; } 
+            #map { height: 450px !important; }
         }
     </style>
 </head>
 <body>
 
 <header id="mainHeader">
-    <div class="brand"><h1>AEGISGRID // ENGINE v4.0 MASTER SYSTEM</h1></div>
+    <div class="brand"><h1>AEGISGRID // ENGINE v4.1 MASTER SYSTEM</h1></div>
     <div style="font-size: 0.7rem;">SYSTEM PROTOCOL: <span id="aiStatus" style="color:var(--radar-green)">SYNCHRONIZING MESH...</span></div>
 </header>
 
@@ -128,7 +118,7 @@
     <section id="about" style="display:none;" class="console">
         <h2 style="color:var(--radar-green); font-size: 0.9rem;">AEGISGRID HIGH-POWER ARTIFACT MANUAL // BY TIMMYDON</h2>
         <p style="font-size: 0.65rem; color: var(--text-digital); margin-top: 5px; line-height: 1.3;">
-            Version 4.0 integrates automated kinetic dead-reckoning models, hardware-throttled update loops, location-restricted cryptographic decoders, voice cognition, optical captures, and multi-node path tracking grids. Engineered and developed under the technical direction of TIMMYDON.
+            Version 4.1 integrates automated connection tracking checks to eliminate dynamic cascade loop echo anomalies on concurrent WebRTC channels. Master system optimization engineered by TIMMYDON.
         </p>
     </section>
 
@@ -144,6 +134,7 @@
                 <div class="data-point"><span>PERIMETER LOCK:</span><span id="fenceStatus" style="color:var(--radar-green)">SECURE BOUNDS</span></div>
             </div>
 
+            <!-- TACTICAL DUAL-MODE WEBRTC VIDEO TELEMETRY STREAM PANEL -->
             <div class="widget" style="border-color: var(--threat-amber);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                     <h4 style="font-size:0.55rem; color:var(--threat-amber); margin: 0;">TACTICAL OPTICS FEED // P2P ENGINE</h4>
@@ -170,6 +161,7 @@
                 </div>
             </div>
 
+            <!-- AUDIO VOICE CAPTURE COGNITION BLOCK -->
             <div class="widget" style="border-color: var(--radar-green);">
                 <h4 style="font-size:0.55rem; color:var(--radar-green); margin-bottom:5px;">VOICE CAPTURE COGNITION</h4>
                 <div id="voiceStatusDisplay" style="font-size: 0.6rem; color: var(--text-digital); margin-bottom: 5px;">AUDIO ENGINE: STANDBY</div>
@@ -294,8 +286,8 @@
     .on('broadcast', { event: 'deploy_deaddrop_packet' }, function(payload) { renderCryptographicDeadDropMarker(payload.payload); })
     .subscribe(function(status) {
         if (status === 'SUBSCRIBED') {
-            document.getElementById('aiStatus').innerText = "ONLINE // CORE v4 ACTIVE";
-            speakGlobal("Aegis ultra command architecture upgraded to engine version 4 successfully.");
+            document.getElementById('aiStatus').innerText = "ONLINE // CORE v4.1 ACTIVE";
+            speakGlobal("Aegis control architecture optimized to engine version 4.1 successfully.");
             queryDeviceDiagnosticsAndThrottleLoop();
             startDeadReckoningPredictiveDaemon();
         }
@@ -846,10 +838,12 @@
 
         try {
             if (packet.sdp) {
-                if (!meshPeerConnectionsMap[packet.sender]) {
-                    setupIndividualPeerConnection(packet.sender, packet.routingMode);
+                // Safeguard 1: Do not re-instantiate connection if it already exists during signaling
+                if (meshPeerConnectionsMap[packet.sender]) {
+                    return;
                 }
                 
+                setupIndividualPeerConnection(packet.sender, packet.routingMode);
                 await meshPeerConnectionsMap[packet.sender].setRemoteDescription(new RTCSessionDescription(packet.sdp));
                 
                 if (packet.sdp.type === 'offer') {
@@ -873,7 +867,7 @@
                 }
             } else if (packet.candidate) {
                 if (meshPeerConnectionsMap[packet.sender]) {
-                    await meshPeerConnectionsMap[packet.sender].addIceCandidate(new RTCIceCandidate(packet.candidate));
+                    await meshPeerConnectionsMap[packet.sender].addIceCandidate(new RTCIceCandidate(packet.candidate)).catch(e=>{});
                 }
             } else if (packet.signalAction === 'TERMINATE_SIGNAL_LINK') {
                 purgeRemoteStreamElement(packet.sender);
@@ -884,6 +878,9 @@
     });
 
     function setupIndividualPeerConnection(remoteOperatorUID, currentRoutingMode) {
+        // Safeguard 2: Critical short-circuit rule to prevent duplicated ghost streams
+        if (meshPeerConnectionsMap[remoteOperatorUID]) return;
+
         var pc = new RTCPeerConnection(rtcIceConfig);
         meshPeerConnectionsMap[remoteOperatorUID] = pc;
 
@@ -971,6 +968,9 @@
             
             Object.keys(activeNodesMemoryObject).forEach(async function(targetOperatorID) {
                 if (targetOperatorID !== myUID) {
+                    // Safeguard 3: Prevent outbound calls from duplicating existing active mesh paths
+                    if (meshPeerConnectionsMap[targetOperatorID]) return;
+
                     setupIndividualPeerConnection(targetOperatorID, 'CONFERENCE');
                     cameraMediaStreamInstance.getTracks().forEach(function(track) {
                         meshPeerConnectionsMap[targetOperatorID].addTrack(track, cameraMediaStreamInstance);
@@ -987,6 +987,8 @@
             speakGlobal("Broadcasting structural conference handshake vectors.");
         } else {
             var targetID = callTargetMode;
+            if (meshPeerConnectionsMap[targetID]) return; // Safeguard 4
+
             document.getElementById('callModeIndicator').innerText = "DIRECT_CALL";
             document.getElementById('callModeIndicator').style.color = "var(--cyber-blue)";
             document.getElementById('callModeIndicator').style.borderColor = "var(--cyber-blue)";
@@ -1090,10 +1092,7 @@
             stopVoiceListeningState();
         };
 
-        recognition.onend = function() {
-            stopVoiceListeningState();
-        };
-
+        recognition.onend = function() { stopVoiceListeningState(); };
         return recognition;
     }
 
@@ -1102,7 +1101,6 @@
         if (!voiceRecognitionInstance) {
             voiceRecognitionInstance = initializeVoiceEngineSetup();
         }
-        
         if (!voiceRecognitionInstance) return;
 
         if (!voiceIsListeningState) {
