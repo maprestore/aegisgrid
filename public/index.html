@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AEGISGRID // OMNISCIENT MASTER CORE</title>
+    <title>AEGISGRID // ULTRA COMMAND MASTER CORE</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root { 
             --bg-tactical: #020305; --radar-green: #00ff66; --threat-amber: #ffaa00; --threat-red: #ff0000;
             --border-dim: rgba(0, 255, 102, 0.25); --text-digital: #a3b8b0; 
-            --cyber-blue: #00ffff;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', monospace; }
         body { background: var(--bg-tactical); color: #fff; display: flex; flex-direction: column; min-height: 100vh; transition: background 0.5s; }
@@ -47,14 +46,12 @@
         
         footer { padding: 15px; text-align: center; border-top: 1px solid var(--border-dim); font-size: 0.6rem; color: var(--text-digital); }
         @media (max-width: 768px) { main { grid-template-columns: 1fr; } }
-        .animated-laser-arc-path { stroke-dasharray: 8, 24; animation: laserArcSprintingFlow 1.5s linear infinite; }
-        @keyframes laserArcSprintingFlow { to { stroke-dashoffset: -32; } }
     </style>
 </head>
 <body>
 
 <header id="mainHeader">
-    <div class="brand"><h1>AEGISGRID // OMNISCIENT MASTER CORE</h1></div>
+    <div class="brand"><h1>AEGISGRID // CORE MASTER OPS</h1></div>
     <div style="font-size: 0.7rem;">SYSTEM MODE: <span id="aiStatus" style="color:var(--radar-green)">CONNECTING...</span></div>
 </header>
 
@@ -66,17 +63,21 @@
 
 <main id="main-content">
     <section id="dashboard">
-        <div class="console"><div id="map"></div></div>
+        <div class="console">
+            <div id="map"></div>
+        </div>
     </section>
     
     <section id="admin" style="display:none;" class="console">
         <h2 style="color:var(--radar-green); font-size: 1rem;">ADMIN COMMAND // MASTER OVERRIDE</h2>
         <div class="widget">
-            <button class="btn-main" onclick="broadcastSystemStatus('GREEN')">SET GLOBAL STATUS: GREEN</button>
-            <button class="btn-main" onclick="broadcastSystemStatus('RED')">SET GLOBAL STATUS: RED</button>
-            <button class="btn-main" onclick="deployGlobalBounty()">DEPLOY SECTOR MISSION OBJECTIVE</button>
+            <h3 style="font-size: 0.6rem; color:var(--radar-green); margin-bottom:8px;">SYSTEM TELEMETRY DIAGNOSTICS</h3>
+            <button class="btn-main" style="border-color:#00ff66" onclick="broadcastSystemStatus('GREEN')">SET GLOBAL STATUS: GREEN</button>
+            <button class="btn-main" style="border-color:#ff0000" onclick="broadcastSystemStatus('RED')">SET GLOBAL STATUS: RED</button>
+            <button class="btn-main" style="border-color:var(--threat-amber)" onclick="deployGlobalBounty()">DEPLOY SECTOR MISSION OBJECTIVE</button>
         </div>
         <div class="widget">
+            <p style="font-size: 0.7rem; color: #fff;">Forensic System Logs:</p>
             <div id="logArea" style="font-size: 0.5rem; color: var(--radar-green); margin-top: 10px; height: 100px; overflow-y: scroll;">[SYSTEM_LOG_INITIALIZED]</div>
             <button class="btn-main" onclick="exportLogs()">EXPORT FORENSIC DATA</button>
             <button class="btn-main" style="border-color:#ff0000; color:#ff0000;" onclick="emergencyWipe()">EMERGENCY WIPE</button>
@@ -85,7 +86,9 @@
 
     <section id="about" style="display:none;" class="console">
         <h2 style="color:var(--radar-green); font-size: 1rem;">SYSTEM ARCHITECT: TIMMY DON</h2>
-        <p style="font-size: 0.7rem; color: var(--text-digital); margin-top: 10px;">Omniscient AegisGrid Ultra Architecture.</p>
+        <p style="font-size: 0.7rem; color: var(--text-digital); margin-top: 10px;">
+            AegisGrid Ultra Architecture integrates live telemetry tracking, device diagnosis, encrypted group communication, boundary geo-fencing, and decentralized objective routing.
+        </p>
     </section>
 
     <aside id="sidebar">
@@ -97,6 +100,19 @@
                 <div class="data-point"><span>HIVE HEARTBEAT:</span><span id="hbStatus">●</span></div>
                 <div class="data-point"><span>ACTIVE NODES:</span><span id="nodeCount">0</span></div>
                 <div class="data-point"><span>SECTOR RISK:</span><span id="threatLevel" style="color:var(--radar-green)">NOMINAL</span></div>
+                <div class="data-point"><span>PERIMETER:</span><span id="fenceStatus" style="color:var(--radar-green)">SECURE</span></div>
+            </div>
+
+            <div class="widget" style="margin-top: 0;">
+                <h4 style="font-size:0.55rem; color:var(--radar-green); margin-bottom:5px;">LOCAL DEVICE DIAGNOSTICS</h4>
+                <div class="data-point" style="font-size:0.6rem;"><span>NET CORES:</span><span id="cpuCores">--</span></div>
+                <div class="data-point" style="font-size:0.6rem;"><span>NET SPEED:</span><span id="netSpeed">--</span></div>
+                <div class="data-point" style="font-size:0.6rem;"><span>BATTERY:</span><span id="batteryDisplay">--</span></div>
+            </div>
+            
+            <div class="video-container">
+                <div class="vid-overlay">COMMS FEED: ENCRYPTED</div>
+                <video id="localVideo" autoplay playsinline muted></video>
             </div>
 
             <div class="chat-container">
@@ -107,50 +123,312 @@
                 </div>
             </div>
 
-            <div id="integrityHash" class="hash-display">SYNC_READY</div>
+            <div id="integrityHash" class="hash-display" style="margin-top:0;">SYNC_READY</div>
             <button class="btn-main" onclick="transmitData()">TRANSMIT TELEMETRY</button>
-            <button class="btn-main" onclick="activateSwarmAutonomy()" style="border-color:var(--cyber-blue); color:var(--cyber-blue);">FORCE SWARM ALIGNMENT</button>
-            <button class="btn-main" onclick="transmitSecure()">SEND ENCRYPTED PACKET</button>
+            <button class="btn-main" style="border-color:var(--threat-amber)" onclick="initVoice()">VOICE COMMAND</button>
         </div>
     </aside>
 </main>
 
-<footer>&copy; 2026 AEGISGRID DEFENSIVE SYSTEMS.</footer>
+<footer>&copy; 2026 AEGISGRID DEFENSIVE SYSTEMS. ARCHITECT: TIMMY DON.</footer>
 
-<script src="/socket.io/socket.io.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-    const socket = io();
-    const map = L.map('map', {tap: false}).setView([9.0820, 8.6753], 6);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    let telemetryHistory = [];
+    let knownNodes = new Set();
+    let audioCtx = null;
+    let alarmInterval = null;
+    let localStream = null;
+    
+    const FENCE_CENTER_LAT = 9.0820;
+    const FENCE_CENTER_LNG = 8.6753;
+    const MAX_ALLOWED_RADIUS_METERS = 500000; 
 
-    // --- OMNISCIENT FEATURES ---
-    function activateSwarmAutonomy() {
-        document.getElementById('logArea').innerHTML += `<br>> [AUTONOMY]: INITIATING SWARM ALIGNMENT...`;
-        socket.emit('sync-request', { command: 'FORCE_ALIGN_GHOST_NODES' });
-    }
+    let map = L.map('map', {tap: false}).setView([FENCE_CENTER_LAT, FENCE_CENTER_LNG], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    socket.on('encrypted-broadcast', (packet) => {
-        document.getElementById('logArea').innerHTML += `<br>> [SECURE_INBOUND]: ${packet.data.slice(0, 25)}...`;
+    let safePerimeterCircle = L.circle([FENCE_CENTER_LAT, FENCE_CENTER_LNG], {
+        color: 'rgba(0, 255, 102, 0.4)',
+        fillColor: 'transparent',
+        dashArray: '5, 10',
+        radius: MAX_ALLOWED_RADIUS_METERS
+    }).addTo(map);
+
+    const SUPABASE_URL = "https://gxsfofwshgscfbypswqq.supabase.co"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4c2ZvZndzaGdzY2ZieXBzd3FxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTgzNjU1NDIsImV4cCI6MjAzMzk0MTU0Mn0.7e_lZWhv680y93p7KymB1PZIn-LNoXW5P-j8_lq3xIE";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    const channel = supabaseClient.channel('aegis_master_swarm', {
+        config: { broadcast: { self: true } }
     });
 
-    socket.on('matrix-correction', (data) => {
-        document.getElementById('aiStatus').innerText = "SWARM ALIGNED";
-        document.getElementById('logArea').innerHTML += `<br>> [SYNC]: MATRIX ALIGNED AT ${data.ts}`;
+    channel
+    .on('broadcast', { event: 'telemetry' }, (payload) => handleIncomingNode(payload.payload))
+    .on('broadcast', { event: 'status_override' }, (payload) => executeLocalStatusChange(payload.payload.status))
+    .on('broadcast', { event: 'secure_chat' }, (payload) => appendChatMessage(payload.payload))
+    .on('broadcast', { event: 'bounty_deploy' }, (payload) => renderBountyObjective(payload.payload))
+    .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+            document.getElementById('aiStatus').innerText = "ONLINE // HARMONIZED GATEWAY";
+            speakGlobal("Aegis ultra command architecture initialized successfully.");
+            queryDeviceDiagnostics();
+        }
     });
 
-    function transmitSecure() {
-        const secretPayload = "TACTICAL_CORE_DATA_" + Date.now();
-        socket.emit('secure-broadcast', { message: secretPayload });
-        document.getElementById('logArea').innerHTML += `<br>> [SECURE_OUTBOUND]: PACKET ENCRYPTED`;
+    let startTime = new Date();
+    setInterval(() => {
+        let diff = new Date() - startTime;
+        let m = Math.floor(diff / 60000);
+        let s = Math.floor((diff % 60000) / 1000);
+        if(document.getElementById('aiStatus').innerText !== "LISTENING...") {
+            document.getElementById('aiStatus').innerText = `GRID LIVE: ${m}m ${s}s`;
+        }
+    }, 1000);
+
+    function queryDeviceDiagnostics() {
+        document.getElementById('cpuCores').innerText = `${navigator.hardwareConcurrency || 'N/A'} CORE THREADS`;
+        if (navigator.connection) {
+            document.getElementById('netSpeed').innerText = `${navigator.connection.downlink || 'N/A'} MBPS`;
+        }
+        if (navigator.getBattery) {
+            navigator.getBattery().then(battery => {
+                const updateBattery = () => {
+                    document.getElementById('batteryDisplay').innerText = `${Math.round(battery.level * 100)}% ${battery.charging ? '[CHARGING]' : '[DISCHARGING]'}`;
+                };
+                updateBattery();
+                battery.onlevelchange = updateBattery;
+                battery.onchargingchange = updateBattery;
+            });
+        } else { document.getElementById('batteryDisplay').innerText = "NOT AVAILABLE"; }
     }
 
-    // Existing functions ...
+    function triggerAudioTone(freq, type, duration) {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    async function initWebRTCCam() {
+        if (localStream) return;
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            document.getElementById('localVideo').srcObject = localStream;
+            document.querySelector('.vid-overlay').innerText = "COMMS FEED: SECURED P2P LINKED";
+        } catch (err) { document.querySelector('.vid-overlay').innerText = "FEED OFFLINE: REJECTED"; }
+    }
+
+    function maskCoordinates(lat, lng) {
+        const variance = 0.03; 
+        const maskedLat = Math.floor(lat / variance) * variance + (variance / 2);
+        const maskedLng = Math.floor(lng / variance) * variance + (variance / 2);
+        return { maskedLat, maskedLng };
+    }
+
+    function transmitData() {
+        initWebRTCCam();
+        navigator.geolocation.getCurrentPosition((pos) => {
+            const rawLat = pos.coords.latitude;
+            const rawLng = pos.coords.longitude;
+            
+            const distanceMetres = map.distance([rawLat, rawLng], [FENCE_CENTER_LAT, FENCE_CENTER_LNG]);
+            const breachActive = distanceMetres > MAX_ALLOWED_RADIUS_METERS;
+
+            const { maskedLat, maskedLng } = maskCoordinates(rawLat, rawLng);
+            const simulatedHash = "AEG-" + Math.random().toString(36).substring(2, 12).toUpperCase();
+            
+            channel.send({
+                type: 'broadcast',
+                event: 'telemetry',
+                payload: {
+                    lat: maskedLat, lng: maskedLng, hash: simulatedHash, 
+                    breach: breachActive, timestamp: new Date().getTime()
+                }
+            });
+        }, (err) => { alert("Telemetry extraction refused."); });
+    }
+
+    function handleIncomingNode(data) {
+        if (knownNodes.has(data.hash)) return;
+        knownNodes.add(data.hash);
+
+        document.getElementById('nodeCount').innerText = knownNodes.size;
+        document.getElementById('integrityHash').innerText = data.hash;
+        map.setView([data.lat, data.lng], 10);
+        
+        const sectorColor = data.breach ? 'var(--threat-red)' : 'var(--radar-green)';
+        
+        L.circle([data.lat, data.lng], {
+            color: sectorColor, fillColor: data.breach ? '#ff0000' : '#00ff66',
+            fillOpacity: 0.12, radius: 3000
+        }).addTo(map).bindPopup(`<b>Sector Node Hash:</b> ${data.hash}<br><b>Perimeter Status:</b> ${data.breach ? 'OUTSIDE GEOFENCE' : 'INSIDE GEOFENCE'}`).openPopup();
+
+        if (data.breach) {
+            document.getElementById('fenceStatus').innerText = "BREACH DETECTED";
+            document.getElementById('fenceStatus').style.color = "var(--threat-red)";
+            document.getElementById('logArea').innerHTML += `<br><span style="color:var(--threat-red)">> [CRITICAL GEOFENCE BREACH DETECTED AT NODE ${data.hash}]</span>`;
+            speakGlobal("Tactical alert. An active node has logged outside the secure operations perimeter.");
+            executeLocalStatusChange('RED');
+        }
+
+        document.getElementById('logArea').innerHTML += `<br>> NODE_${knownNodes.size}: ${data.hash} LOCKED ON SYSTEM GRID`;
+        triggerAudioTone(720, 'sine', 0.25);
+        assessRiskMatrix(data);
+    }
+
+    function assessRiskMatrix(newNode) {
+        const now = new Date().getTime();
+        telemetryHistory.push({ lat: newNode.lat, lng: newNode.lng, time: now });
+        telemetryHistory = telemetryHistory.filter(node => now - node.time < 60000);
+
+        let collisions = 0;
+        for (let node of telemetryHistory) {
+            if (Math.sqrt(Math.pow(node.lat - newNode.lat, 2) + Math.pow(node.lng - newNode.lng, 2)) < 0.05) collisions++;
+        }
+
+        const riskDisplay = document.getElementById('threatLevel');
+        if (collisions >= 3) {
+            riskDisplay.innerText = "CRITICAL METRIC"; riskDisplay.style.color = "var(--threat-red)";
+            broadcastSystemStatus('RED');
+        } else if (collisions === 2) {
+            riskDisplay.innerText = "ELEVATED RISK"; riskDisplay.style.color = "var(--threat-amber)";
+        }
+    }
+
+    function handleChatKey(e) { if(e.key === 'Enter') sendSecureChatMessage(); }
+    
+    function sendSecureChatMessage() {
+        const input = document.getElementById('chatInput');
+        if (!input.value.trim()) return;
+        
+        channel.send({
+            type: 'broadcast',
+            event: 'secure_chat',
+            payload: { message: input.value.trim(), id: "NODE_" + Math.random().toString(36).substring(2, 5).toUpperCase() }
+        });
+        input.value = '';
+    }
+
+    function appendChatMessage(data) {
+        const msgArea = document.getElementById('chatMessages');
+        msgArea.innerHTML += `<div><span style="color:var(--radar-green)">[${data.id}]:</span> ${data.message}</div>`;
+        msgArea.scrollTop = msgArea.scrollHeight;
+        triggerAudioTone(1000, 'sine', 0.05);
+    }
+
+    function deployGlobalBounty() {
+        const mapCenter = map.getCenter();
+        channel.send({
+            type: 'broadcast',
+            event: 'bounty_deploy',
+            payload: { lat: mapCenter.lat, lng: mapCenter.lng, bountyId: "OBJ-" + Math.floor(1000 + Math.random() * 9000) }
+        });
+    }
+
+    function renderBountyObjective(data) {
+        L.marker([data.lat, data.lng], {
+            icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: "<div style='background-color:var(--threat-amber); width:12px; height:12px; border-radius:50%; border:2px solid black;'></div>",
+                iconSize: [12, 12]
+            })
+        }).addTo(map).bindPopup(`<b>ACTIVE MISSION OBJECTIVE TARGET</b><br>ID: ${data.bountyId}<br><button class='btn-main' style='font-size:0.5rem; padding:2px;' onclick='claimObjective("${data.bountyId}")'>SECURE TARGET SECTOR</button>`).openPopup();
+
+        document.getElementById('logArea').innerHTML += `<br><span style="color:var(--threat-amber)">> [NEW TARGET MISSION ISSUED: ${data.bountyId}]</span>`;
+        speakGlobal("New tracking objective broadcasted to tactical systems.");
+    }
+
+    function claimObjective(id) {
+        alert(`OBJECTIVE SECURED: Target ${id} cleared. Payload integrity assigned to your operator footprint.`);
+        document.getElementById('logArea').innerHTML += `<br>> OBJECTIVE ${id} RESOLVED BY LOCAL FORCE.`;
+    }
+
+    function broadcastSystemStatus(status) {
+        channel.send({ type: 'broadcast', event: 'status_override', payload: { status: status } });
+    }
+
+    function executeLocalStatusChange(status) {
+        const header = document.getElementById('mainHeader');
+        const pulse = document.getElementById('statusPulse');
+        if (status === 'RED') {
+            header.style.borderBottom = "2px solid #ff0000"; pulse.style.background = "#ff0000";
+            if(!alarmInterval) { alarmInterval = setInterval(() => { triggerAudioTone(580, 'sawtooth', 0.2); }, 500); }
+        } else {
+            header.style.borderBottom = "2px solid #00ff66"; pulse.style.background = "#00ff66";
+            document.getElementById('fenceStatus').innerText = "SECURE"; document.getElementById('fenceStatus').style.color = "var(--radar-green)";
+            if(alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
+        }
+    }
+
+    function emergencyWipe() {
+        if (confirm("PURGE ENTIRE INTERFACE LOG HISTORIES?")) {
+            document.getElementById('logArea').innerHTML = "[SYSTEM_WIPED]";
+            knownNodes.clear(); telemetryHistory = [];
+            document.getElementById('nodeCount').innerText = "0";
+            if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+            document.getElementById('localVideo').srcObject = null;
+            speakGlobal("Data tracks vaporized. Operational terminal connection dropped.");
+            broadcastSystemStatus('RED');
+        }
+    }
+
     function showSection(id) {
         document.getElementById('dashboard').style.display = (id === 'dashboard') ? 'block' : 'none';
         document.getElementById('admin').style.display = (id === 'admin') ? 'block' : 'none';
         document.getElementById('about').style.display = (id === 'about') ? 'block' : 'none';
         document.getElementById('sidebar').style.display = (id === 'admin') ? 'none' : 'block';
+    }
+
+    function exportLogs() {
+        const blob = new Blob([document.getElementById('logArea').innerText], {type: 'text/plain'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "AegisGrid_Forensic.txt"; a.click();
+    }
+
+    async function requestAdminAccess() {
+        const input = prompt("ENTER MASTER ARCHITECT SECURITY ACCESS KEY:");
+        if (!input) return;
+        try {
+            const response = await fetch('/api/authorize-admin', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: input })
+            });
+            const data = await response.json();
+            if (response.ok && data.authorized) {
+                showSection('admin'); speakGlobal("Access granted. Welcome back, Architect.");
+            } else { alert("ACCESS SYSTEM VIOLATION REJECTED."); }
+        } catch (err) { console.error("Server synchronization mismatch."); }
+    }
+
+    function speakGlobal(msg) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(msg); u.lang = 'en-US'; u.rate = 1.05;
+            window.speechSynthesis.speak(u);
+        }
+    }
+
+    function initVoice() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(!SpeechRecognition) return;
+        const recognition = new SpeechRecognition();
+        document.getElementById('aiStatus').innerText = "LISTENING...";
+        recognition.onresult = (event) => {
+            const cmd = event.results[0][0].transcript.toLowerCase();
+            if(cmd.includes("transmit") || cmd.includes("telemetry")) transmitData();
+            if(cmd.includes("wipe")) emergencyWipe();
+        };
+        recognition.onend = () => { document.getElementById('aiStatus').innerText = "ONLINE"; };
+        recognition.start();
     }
 </script>
 </body>
