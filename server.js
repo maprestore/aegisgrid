@@ -7,90 +7,65 @@ require('dotenv').config();
 const app = express();
 const server = http.createServer(app);
 
-// Initialize Socket.io with production CORS configuration rules
+// Initialize Socket.io with CORS enabled for your domain
 const io = new Server(server, {
     cors: {
-        origin: "*",
+        origin: "*", 
         methods: ["GET", "POST"]
     }
 });
 
-// Middleware configuration
+// Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Core State Memory Engines
+// In-Memory Data Store (For persistence across reloads, consider a database like Redis/Supabase)
 let globalTacticalNodes = {};
 
-// Express Admin Authorization Endpoint Hook
+// Admin Authorization Route
 app.post('/api/authorize-admin', (req, res) => {
     const { key } = req.body;
-    // Uses environment variable or defaults securely
     const masterSecretKey = process.env.ADMIN_SECRET_KEY || "TIMMYDON_MASTER_77";
     
     if (key === masterSecretKey) {
-        return res.status(200).json({ authorized: true, message: "ARCHITECT_VERIFIED" });
+        return res.status(200).json({ authorized: true });
     }
     return res.status(401).json({ authorized: false, message: "ACCESS_DENIED" });
 });
 
-// Real-Time Socket Intercept Pipelines
+// Socket.io Real-Time Engine
 io.on('connection', (socket) => {
-    
-    // Instantiate node mapping container upon handshake
-    globalTacticalNodes[socket.id] = {
-        id: socket.id,
-        lat: null,
-        lon: null,
-        isGhost: false,
-        vitals: { hr: 72, temp: 36.6, status: "NOMINAL" }
-    };
+    console.log(`New Node Intercepted: ${socket.id}`);
 
-    // Telemetry pulse synchronization interceptor
-    socket.on('telemetry-pulse', (data) => {
-        if (globalTacticalNodes[socket.id]) {
-            globalTacticalNodes[socket.id].lat = data.lat;
-            globalTacticalNodes[socket.id].lon = data.lon;
-            globalTacticalNodes[socket.id].vitals = data.vitals || globalTacticalNodes[socket.id].vitals;
-            io.emit('global-matrix-update', globalTacticalNodes);
-        }
+    // Telemetry Sync
+    socket.on('telemetry', (payload) => {
+        globalTacticalNodes[socket.id] = payload;
+        // Broadcast update to all clients
+        io.emit('telemetry', payload);
     });
 
-    // Synthetic ghost simulator entry injection hook
-    socket.on('inject-synthetic-cluster', (clusterData) => {
-        Object.assign(globalTacticalNodes, clusterData);
-        io.emit('global-matrix-update', globalTacticalNodes);
+    // Chat Relay
+    socket.on('secure_chat', (payload) => {
+        io.emit('secure_chat', payload);
     });
 
-    // Secure encrypted radio message packets distribution layer
-    socket.on('transmit-secure-packet', (payload) => {
-        io.emit('broadcast-secure-packet', {
-            sender: socket.id.slice(0, 5),
-            message: payload.message,
-            stegoData: payload.stegoData || null
-        });
+    // Admin Overrides
+    socket.on('status_override', (payload) => {
+        io.emit('status_override', payload);
     });
 
-    // Global override command receiver
-    socket.on('admin-status-override', (payload) => {
-        io.emit('global-status-sync', { status: payload.status });
+    // Mission Objectives
+    socket.on('bounty_deploy', (payload) => {
+        io.emit('bounty_deploy', payload);
     });
 
-    // Clean disconnect sweep array loop
     socket.on('disconnect', () => {
         delete globalTacticalNodes[socket.id];
-        // Clean up linked virtual simulations spawned by this node instance
-        Object.keys(globalTacticalNodes).forEach(id => {
-            if (id.startsWith(`GHOST-${socket.id}`)) {
-                delete globalTacticalNodes[id];
-            }
-        });
-        io.emit('global-matrix-update', globalTacticalNodes);
+        console.log(`Node Lost: ${socket.id}`);
     });
 });
 
-// Port Binding Configuration for Render Container Networks
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Aegis Ultra Command Master Core actively hosting on port ${PORT}`);
+    console.log(`Aegis Ultra Command Master Core Active on port ${PORT}`);
 });
