@@ -1,96 +1,40 @@
 const express = require('express');
 const http = require('http');
-const path = require('path');
 const { Server } = require('socket.io');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
+const io = new Server(server);
 
-// Initialize Socket.io with production CORS configuration rules
-const io = new Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-});
+// Middleware for secure radio transmission encryption
+const ENCRYPTION_KEY = process.env.SECRET_KEY || 'aegisgrid_master_key_32_bytes!!'; 
+const IV_LENGTH = 16; 
 
-// Middleware configuration
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+function encrypt(text) {
+    let iv = crypto.randomBytes(IV_LENGTH);
+    let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+    let encrypted = cipher.update(text);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+    return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
 
-// Core State Memory Engines
-let globalTacticalNodes = {};
-
-// Express Admin Authorization Endpoint Hook
-app.post('/api/authorize-admin', (req, res) => {
-    const { key } = req.body;
-    // Uses environment variable or defaults securely
-    const masterSecretKey = process.env.ADMIN_SECRET_KEY || "TIMMYDON_MASTER_77";
-    
-    if (key === masterSecretKey) {
-        return res.status(200).json({ authorized: true, message: "ARCHITECT_VERIFIED" });
-    }
-    return res.status(401).json({ authorized: false, message: "ACCESS_DENIED" });
-});
-
-// Real-Time Socket Intercept Pipelines
 io.on('connection', (socket) => {
-    
-    // Instantiate node mapping container upon handshake
-    globalTacticalNodes[socket.id] = {
-        id: socket.id,
-        lat: null,
-        lon: null,
-        isGhost: false,
-        vitals: { hr: 72, temp: 36.6, status: "NOMINAL" }
-    };
-
-    // Telemetry pulse synchronization interceptor
-    socket.on('telemetry-pulse', (data) => {
-        if (globalTacticalNodes[socket.id]) {
-            globalTacticalNodes[socket.id].lat = data.lat;
-            globalTacticalNodes[socket.id].lon = data.lon;
-            globalTacticalNodes[socket.id].vitals = data.vitals || globalTacticalNodes[socket.id].vitals;
-            io.emit('global-matrix-update', globalTacticalNodes);
+    // Autonomous Swarm Logic: Server pushes threat state independently
+    socket.on('sync-request', (data) => {
+        if (data.command === 'FORCE_ALIGN_GHOST_NODES') {
+            console.log("ALIGNING SWARM...");
+            io.emit('matrix-correction', { status: 'ALIGN_COMPLETE', timestamp: Date.now() });
         }
     });
 
-    // Synthetic ghost simulator entry injection hook
-    socket.on('inject-synthetic-cluster', (clusterData) => {
-        Object.assign(globalTacticalNodes, clusterData);
-        io.emit('global-matrix-update', globalTacticalNodes);
-    });
-
-    // Secure encrypted radio message packets distribution layer
-    socket.on('transmit-secure-packet', (payload) => {
-        io.emit('broadcast-secure-packet', {
-            sender: socket.id.slice(0, 5),
-            message: payload.message,
-            stegoData: payload.stegoData || null
-        });
-    });
-
-    // Global override command receiver
-    socket.on('admin-status-override', (payload) => {
-        io.emit('global-status-sync', { status: payload.status });
-    });
-
-    // Clean disconnect sweep array loop
-    socket.on('disconnect', () => {
-        delete globalTacticalNodes[socket.id];
-        // Clean up linked virtual simulations spawned by this node instance
-        Object.keys(globalTacticalNodes).forEach(id => {
-            if (id.startsWith(`GHOST-${socket.id}`)) {
-                delete globalTacticalNodes[id];
-            }
-        });
-        io.emit('global-matrix-update', globalTacticalNodes);
+    // Encrypted Broadcast Pipeline
+    socket.on('secure-broadcast', (payload) => {
+        const securePayload = encrypt(payload.message);
+        io.emit('encrypted-broadcast', { data: securePayload, origin: 'CORE_SYSTEM' });
     });
 });
 
-// Port Binding Configuration for Render Container Networks
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Aegis Ultra Command Master Core actively hosting on port ${PORT}`);
-});
+server.listen(PORT, '0.0.0.0', () => console.log("AEGIS // GLOBAL MASTER CORE ONLINE"));
